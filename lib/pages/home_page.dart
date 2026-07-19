@@ -119,16 +119,8 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Row(
-            children: [
-              Text('Delete counter'),
-            ],
-          ),
-          content: Row(
-            children: [
-              Text('Are you sure you want to delete "${counter.title}"?'),
-            ],
-          ),
+          title: const Text('Delete counter'),
+          content: Text('Are you sure you want to delete "${counter.title}"?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -186,8 +178,9 @@ class _HomePageState extends State<HomePage> {
                   if (hasTarget)
                     TextField(
                       controller: targetController,
-                      decoration:
-                          const InputDecoration(labelText: 'Target count'),
+                      decoration: const InputDecoration(
+                        labelText: 'Target count',
+                      ),
                       keyboardType: TextInputType.number,
                     ),
                 ],
@@ -229,109 +222,105 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('My Counters')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _counters.isEmpty
-              ? const Center(child: Text('No counters yet. Tap + to add one.'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: _counters.length,
-                  itemBuilder: (context, index) {
-                    final counter = _counters[index];
-                    final progress = counter.progress;
-                    return Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    counter.title,
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _counters.isEmpty
+            ? const Center(child: Text('No counters yet. Tap + to add one.'))
+            : ListView.builder(
+                padding: const EdgeInsets.all(8),
+                itemCount: _counters.length,
+                itemBuilder: (context, index) {
+                  final counter = _counters[index];
+                  final progress = counter.progress;
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  counter.title,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                              ),
+                              Text(
+                                progress == null
+                                    ? '${counter.count}'
+                                    : '${counter.count} / ${counter.target}',
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          if (progress != null)
+                            LinearProgressIndicator(value: progress),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    onPressed: () =>
+                                        _showDeleteCounterDialog(counter),
+                                    icon: const Icon(Icons.delete_outline),
                                   ),
-                                ),
-                                Text(
-                                  progress == null
-                                      ? '${counter.count}'
-                                      : '${counter.count} / ${counter.target}',
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            if (progress != null)
-                              LinearProgressIndicator(value: progress),
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      onPressed: () =>
-                                          _showDeleteCounterDialog(counter),
-                                      icon:
-                                          const Icon(Icons.delete_outline),
+                                  IconButton(
+                                    onPressed: () => _showCounterFormDialog(
+                                      existing: counter,
                                     ),
-                                    IconButton(
-                                      onPressed: () => _showCounterFormDialog(
-                                        existing: counter,
-                                      ),
-                                      icon: const Icon(Icons.edit_outlined),
+                                    icon: const Icon(Icons.edit_outlined),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.remove_circle_outline,
                                     ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(
-                                          Icons.remove_circle_outline),
-                                      onPressed: () => _decrement(
-                                        counter,
-                                        _stepFor(counter),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 44,
-                                      child: TextField(
-                                        controller:
-                                            _stepControllerFor(counter),
-                                        textAlign: TextAlign.center,
-                                        keyboardType: TextInputType.number,
-                                        decoration: const InputDecoration(
-                                          isDense: true,
-                                          contentPadding:
-                                              EdgeInsets.symmetric(
-                                            vertical: 8,
-                                          ),
+                                    onPressed: () =>
+                                        _decrement(counter, _stepFor(counter)),
+                                  ),
+                                  SizedBox(
+                                    width: 44,
+                                    child: TextField(
+                                      controller: _stepControllerFor(counter),
+                                      textAlign: TextAlign.center,
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          vertical: 8,
                                         ),
                                       ),
                                     ),
-                                    IconButton(
-                                      icon: const Icon(
-                                          Icons.add_circle_outline),
-                                      onPressed: () => _increment(
-                                        counter,
-                                        _stepFor(counter),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.add_circle_outline),
+                                    onPressed: () =>
+                                        _increment(counter, _stepFor(counter)),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
+              ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCounterFormDialog(),
         tooltip: 'Add counter',
