@@ -5,5 +5,26 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    match /groups/{groupId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.createdBy;
+      // Anyone signed in can join (memberIds-only change). Only the
+      // creator can edit the group's name/target.
+      allow update: if request.auth != null
+        && (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds'])
+          || (
+            request.auth.uid == resource.data.createdBy
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'target'])
+          )
+        );
+
+      match /members/{memberId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == memberId;
+      }
+    }
   }
 }
