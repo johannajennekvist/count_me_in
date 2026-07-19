@@ -1,0 +1,152 @@
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+
+import '../models/counter.dart';
+import '../widgets/confirm_delete_dialog.dart';
+import '../widgets/counter_form_dialog.dart';
+
+class CounterDetailPage extends StatefulWidget {
+  final Counter counter;
+  final void Function(int amount) onIncrement;
+  final void Function(int amount) onDecrement;
+  final void Function(String title, int? target) onEdit;
+  final VoidCallback onDelete;
+
+  const CounterDetailPage({
+    super.key,
+    required this.counter,
+    required this.onIncrement,
+    required this.onDecrement,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  State<CounterDetailPage> createState() => _CounterDetailPageState();
+}
+
+class _CounterDetailPageState extends State<CounterDetailPage> {
+  late Counter _counter = widget.counter;
+  final _stepController = TextEditingController(text: '1');
+
+  @override
+  void dispose() {
+    _stepController.dispose();
+    super.dispose();
+  }
+
+  int get _step {
+    final step = int.tryParse(_stepController.text);
+    return (step == null || step <= 0) ? 1 : step;
+  }
+
+  void _increment() {
+    final amount = _step;
+    widget.onIncrement(amount);
+    setState(
+      () => _counter = _counter.copyWith(count: _counter.count + amount),
+    );
+  }
+
+  void _decrement() {
+    final amount = _step;
+    widget.onDecrement(amount);
+    setState(
+      () =>
+          _counter = _counter.copyWith(count: max(_counter.count - amount, 0)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = _counter.progress;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_counter.title),
+        actions: [
+          IconButton(
+            tooltip: 'Edit',
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () => showCounterFormDialog(
+              context,
+              existing: _counter,
+              onSubmit: (title, target) {
+                widget.onEdit(title, target);
+                setState(
+                  () => _counter = _counter.withDetails(
+                    title: title,
+                    target: target,
+                  ),
+                );
+              },
+            ),
+          ),
+          IconButton(
+            tooltip: 'Delete',
+            icon: const Icon(Icons.delete_outline),
+            onPressed: () => showConfirmDeleteDialog(
+              context,
+              title: 'Delete counter',
+              message: 'Are you sure you want to delete "${_counter.title}"?',
+              onConfirm: () {
+                widget.onDelete();
+                Navigator.of(context).pop();
+              },
+            ),
+          ),
+        ],
+      ),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                progress == null
+                    ? '${_counter.count}'
+                    : '${_counter.count} / ${_counter.target}',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              if (progress != null) ...[
+                const SizedBox(height: 12),
+                LinearProgressIndicator(value: progress),
+              ],
+              const SizedBox(height: 32),
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      iconSize: 36,
+                      icon: const Icon(Icons.remove_circle_outline),
+                      onPressed: _decrement,
+                    ),
+                    SizedBox(
+                      width: 64,
+                      child: TextField(
+                        controller: _stepController,
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(isDense: true),
+                      ),
+                    ),
+                    IconButton(
+                      iconSize: 36,
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: _increment,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

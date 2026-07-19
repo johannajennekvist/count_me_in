@@ -40,18 +40,18 @@ class Counter {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'target': target,
-        'count': count,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'target': target,
+    'count': count,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory Counter.fromJson(Map<String, dynamic> json) => Counter(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        target: json['target'] as int?,
-        count: json['count'] as int,
-        createdAt: DateTime.parse(json['createdAt'] as String),
-      );
+    id: json['id'] as String,
+    title: json['title'] as String,
+    target: json['target'] as int?,
+    count: json['count'] as int,
+    createdAt: DateTime.parse(json['createdAt'] as String),
+  );
 }

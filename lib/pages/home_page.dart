@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../models/counter.dart';
 import '../services/counter_storage.dart';
+import '../widgets/counter_form_dialog.dart';
+import 'counter_detail_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -114,110 +116,6 @@ class _HomePageState extends State<HomePage> {
     await _storage.saveCounters(_counters);
   }
 
-  Future<void> _showDeleteCounterDialog(Counter counter) async {
-    await showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Delete counter'),
-          content: Text('Are you sure you want to delete "${counter.title}"?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                _deleteCounter(counter);
-                Navigator.of(context).pop();
-              },
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _showCounterFormDialog({Counter? existing}) async {
-    final isEditing = existing != null;
-    final titleController = TextEditingController(text: existing?.title);
-    final targetController = TextEditingController(
-      text: existing?.target?.toString() ?? '',
-    );
-    bool hasTarget = existing?.target != null;
-
-    await showDialog<void>(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Row(
-                children: [
-                  const SizedBox(width: 8),
-                  Text(isEditing ? 'Edit counter' : 'Add counter'),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: titleController,
-                    decoration: const InputDecoration(labelText: 'Name'),
-                    autofocus: true,
-                  ),
-                  CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Counter has goal?'),
-                    value: hasTarget,
-                    onChanged: (value) {
-                      setDialogState(() => hasTarget = value ?? false);
-                    },
-                  ),
-                  if (hasTarget)
-                    TextField(
-                      controller: targetController,
-                      decoration: const InputDecoration(
-                        labelText: 'Target count',
-                      ),
-                      keyboardType: TextInputType.number,
-                    ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    final title = titleController.text.trim();
-                    if (title.isEmpty) return;
-
-                    int? target;
-                    if (hasTarget) {
-                      target = int.tryParse(targetController.text);
-                      if (target == null || target <= 0) return;
-                    }
-
-                    if (isEditing) {
-                      _updateCounter(existing, title, target);
-                    } else {
-                      _addCounter(title, target);
-                    }
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(isEditing ? 'Save' : 'Add'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -236,85 +134,83 @@ class _HomePageState extends State<HomePage> {
                   final counter = _counters[index];
                   final progress = counter.progress;
                   return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  counter.title,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleMedium,
-                                ),
-                              ),
-                              Text(
-                                progress == null
-                                    ? '${counter.count}'
-                                    : '${counter.count} / ${counter.target}',
-                              ),
-                            ],
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => CounterDetailPage(
+                              counter: counter,
+                              onIncrement: (amount) =>
+                                  _increment(counter, amount),
+                              onDecrement: (amount) =>
+                                  _decrement(counter, amount),
+                              onEdit: (title, target) =>
+                                  _updateCounter(counter, title, target),
+                              onDelete: () => _deleteCounter(counter),
+                            ),
                           ),
-                          const SizedBox(height: 8),
-                          if (progress != null)
-                            LinearProgressIndicator(value: progress),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    onPressed: () =>
-                                        _showDeleteCounterDialog(counter),
-                                    icon: const Icon(Icons.delete_outline),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    counter.title,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
                                   ),
-                                  IconButton(
-                                    onPressed: () => _showCounterFormDialog(
-                                      existing: counter,
-                                    ),
-                                    icon: const Icon(Icons.edit_outlined),
+                                ),
+                                Text(
+                                  progress == null
+                                      ? '${counter.count}'
+                                      : '${counter.count} / ${counter.target}',
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            if (progress != null)
+                              LinearProgressIndicator(value: progress),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.remove_circle_outline,
                                   ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.remove_circle_outline,
-                                    ),
-                                    onPressed: () =>
-                                        _decrement(counter, _stepFor(counter)),
-                                  ),
-                                  SizedBox(
-                                    width: 44,
-                                    child: TextField(
-                                      controller: _stepControllerFor(counter),
-                                      textAlign: TextAlign.center,
-                                      keyboardType: TextInputType.number,
-                                      decoration: const InputDecoration(
-                                        isDense: true,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          vertical: 8,
-                                        ),
+                                  onPressed: () =>
+                                      _decrement(counter, _stepFor(counter)),
+                                ),
+                                SizedBox(
+                                  width: 44,
+                                  child: TextField(
+                                    controller: _stepControllerFor(counter),
+                                    textAlign: TextAlign.center,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.symmetric(
+                                        vertical: 8,
                                       ),
                                     ),
                                   ),
-                                  IconButton(
-                                    icon: const Icon(Icons.add_circle_outline),
-                                    onPressed: () =>
-                                        _increment(counter, _stepFor(counter)),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.add_circle_outline),
+                                  onPressed: () =>
+                                      _increment(counter, _stepFor(counter)),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -322,7 +218,10 @@ class _HomePageState extends State<HomePage> {
               ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCounterFormDialog(),
+        onPressed: () => showCounterFormDialog(
+          context,
+          onSubmit: (title, target) => _addCounter(title, target),
+        ),
         tooltip: 'Add counter',
         child: const Icon(Icons.add),
       ),
