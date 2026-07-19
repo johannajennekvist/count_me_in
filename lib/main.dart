@@ -8,7 +8,12 @@ import 'pages/auth_gate.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await GoogleSignIn.instance.initialize();
+  try {
+    await GoogleSignIn.instance.initialize();
+  } catch (_) {
+    // Google Sign-In isn't configured on every platform (e.g. desktop);
+    // don't block app startup if it fails to initialize.
+  }
   runApp(const MyApp());
 }
 

@@ -68,6 +68,10 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = e.message ?? 'Something went wrong.');
+    } catch (_) {
+      setState(
+        () => _errorMessage = 'Google sign-in isn\'t available on this device.',
+      );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

@@ -28,10 +28,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -62,7 +59,18 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1057531841336',
     projectId: 'count-me-in-fe2e3',
     storageBucket: 'count-me-in-fe2e3.firebasestorage.app',
-    iosClientId: '1057531841336-d5j4npjmblnnuohm4qlub3rdpjpkb38m.apps.googleusercontent.com',
+    iosClientId:
+        '1057531841336-d5j4npjmblnnuohm4qlub3rdpjpkb38m.apps.googleusercontent.com',
+    iosBundleId: 'com.example.countMeIn',
+  );
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyBgAWmEWL45Y9QqZywHR6FFpbiwHQZVF_c',
+    appId: '1:1057531841336:ios:38d42b47d756c56531cfcd',
+    messagingSenderId: '1057531841336',
+    projectId: 'count-me-in-fe2e3',
+    storageBucket: 'count-me-in-fe2e3.firebasestorage.app',
+    iosClientId:
+        '1057531841336-d5j4npjmblnnuohm4qlub3rdpjpkb38m.apps.googleusercontent.com',
     iosBundleId: 'com.example.countMeIn',
   );
 }
