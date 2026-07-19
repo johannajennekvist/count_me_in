@@ -1,25 +1,28 @@
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/counter.dart';
 
 class CounterStorage {
-  static const _key = 'counters';
+  String get _uid {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) throw StateError('No signed-in user.');
+    return uid;
+  }
+
+  DocumentReference<Map<String, dynamic>> get _doc =>
+      FirebaseFirestore.instance.collection('users').doc(_uid);
 
   Future<List<Counter>> loadCounters() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
-    if (raw == null) return [];
-    final list = jsonDecode(raw) as List<dynamic>;
-    return list
+    final snapshot = await _doc.get();
+    final counters = snapshot.data()?['counters'] as List<dynamic>?;
+    if (counters == null) return [];
+    return counters
         .map((e) => Counter.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
   Future<void> saveCounters(List<Counter> counters) async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = jsonEncode(counters.map((c) => c.toJson()).toList());
-    await prefs.setString(_key, raw);
+    await _doc.set({'counters': counters.map((c) => c.toJson()).toList()});
   }
 }
