@@ -128,6 +128,17 @@ class GroupService {
     return group;
   }
 
+  Future<void> deleteGroup(String groupId) async {
+    final groupRef = _groups.doc(groupId);
+    final membersSnapshot = await groupRef.collection('members').get();
+    final batch = _firestore.batch();
+    for (final doc in membersSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    batch.delete(groupRef);
+    await batch.commit();
+  }
+
   Future<void> incrementMyTally(String groupId, int amount) async {
     await _groups.doc(groupId).collection('members').doc(_uid).update({
       'tally': FieldValue.increment(amount),

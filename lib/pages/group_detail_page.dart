@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/group.dart';
 import '../models/group_member.dart';
 import '../services/group_service.dart';
+import '../widgets/confirm_delete_dialog.dart';
 
 class GroupDetailPage extends StatefulWidget {
   final Group group;
@@ -154,6 +155,22 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                   onPressed: () => _showEditGroupDialog(group),
                   icon: const Icon(Icons.edit_outlined),
                   tooltip: 'Edit group',
+                ),
+              if (group.createdBy == myUid)
+                IconButton(
+                  onPressed: () => showConfirmDeleteDialog(
+                    context,
+                    title: 'Delete group',
+                    message:
+                        'Are you sure you want to delete "${group.name}"? '
+                        'This removes it for everyone and cannot be undone.',
+                    onConfirm: () {
+                      _groupService.deleteGroup(group.id);
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'Delete group',
                 ),
               IconButton(
                 onPressed: () => _showInviteCode(group),
