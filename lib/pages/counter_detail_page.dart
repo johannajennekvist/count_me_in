@@ -13,6 +13,7 @@ class CounterDetailPage extends StatefulWidget {
   final void Function(int amount) onDecrement;
   final void Function(String title, int? target) onEdit;
   final void Function(String notes) onNotesChanged;
+  final VoidCallback onReset;
   final VoidCallback onDelete;
 
   const CounterDetailPage({
@@ -22,6 +23,7 @@ class CounterDetailPage extends StatefulWidget {
     required this.onDecrement,
     required this.onEdit,
     required this.onNotesChanged,
+    required this.onReset,
     required this.onDelete,
   });
 
@@ -58,6 +60,19 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
     setState(
       () =>
           _counter = _counter.copyWith(count: max(_counter.count - amount, 0)),
+    );
+  }
+
+  void _confirmReset() {
+    showConfirmDeleteDialog(
+      context,
+      title: 'Reset counter',
+      message: 'Are you sure you want to reset "${_counter.title}" to 0?',
+      confirmLabel: 'Reset',
+      onConfirm: () {
+        widget.onReset();
+        setState(() => _counter = _counter.copyWith(count: 0));
+      },
     );
   }
 
@@ -138,6 +153,12 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    IconButton(
+                      iconSize: 36,
+                      tooltip: 'Reset',
+                      icon: const Icon(Icons.restart_alt),
+                      onPressed: _confirmReset,
+                    ),
                     IconButton(
                       iconSize: 36,
                       icon: const Icon(Icons.remove_circle_outline),

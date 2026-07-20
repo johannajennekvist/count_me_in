@@ -126,6 +126,16 @@ class _HomePageState extends State<HomePage> {
     await _storage.saveCounters(_counters);
   }
 
+  Future<void> _resetCounter(Counter counter) async {
+    setState(() {
+      _counters = [
+        for (final c in _counters)
+          if (c.id == counter.id) c.copyWith(count: 0) else c,
+      ];
+    });
+    await _storage.saveCounters(_counters);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,6 +168,7 @@ class _HomePageState extends State<HomePage> {
                                   _updateCounter(counter, title, target),
                               onNotesChanged: (notes) =>
                                   _updateNotes(counter, notes),
+                              onReset: () => _resetCounter(counter),
                               onDelete: () => _deleteCounter(counter),
                             ),
                           ),

@@ -5,6 +5,7 @@ Future<void> showConfirmDeleteDialog(
   required String title,
   required String message,
   required VoidCallback onConfirm,
+  String confirmLabel = 'Delete',
 }) async {
   await showDialog<void>(
     context: context,
@@ -22,7 +23,7 @@ Future<void> showConfirmDeleteDialog(
               onConfirm();
               Navigator.of(context).pop();
             },
-            child: const Text('Delete'),
+            child: Text(confirmLabel),
           ),
         ],
       );
