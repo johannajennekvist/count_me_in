@@ -38,6 +38,7 @@ dependencies:
   firebase_auth: ^6.5.6
   google_sign_in: ^7.2.0
   cloud_firestore: ^6.7.1
+  google_fonts: ^8.2.0
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +50,18 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+  ios: true
+  android: true
+  remove_alpha_ios: true
+  adaptive_icon_background: "#144228"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  macos:
+    generate: true
+    image_path: "assets/icon/icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
