@@ -3,6 +3,7 @@ class Counter {
   final String title;
   final int? target;
   final int count;
+  final String notes;
   final DateTime createdAt;
 
   const Counter({
@@ -10,6 +11,7 @@ class Counter {
     required this.title,
     this.target,
     this.count = 0,
+    this.notes = '',
     required this.createdAt,
   });
 
@@ -19,12 +21,13 @@ class Counter {
     return (count / target).clamp(0, 1);
   }
 
-  Counter copyWith({int? count}) {
+  Counter copyWith({int? count, String? notes}) {
     return Counter(
       id: id,
       title: title,
       target: target,
       count: count ?? this.count,
+      notes: notes ?? this.notes,
       createdAt: createdAt,
     );
   }
@@ -35,6 +38,7 @@ class Counter {
       title: title,
       target: target,
       count: count,
+      notes: notes,
       createdAt: createdAt,
     );
   }
@@ -44,6 +48,7 @@ class Counter {
     'title': title,
     'target': target,
     'count': count,
+    'notes': notes,
     'createdAt': createdAt.toIso8601String(),
   };
 
@@ -52,6 +57,7 @@ class Counter {
     title: json['title'] as String,
     target: json['target'] as int?,
     count: json['count'] as int,
+    notes: json['notes'] as String? ?? '',
     createdAt: DateTime.parse(json['createdAt'] as String),
   );
 }

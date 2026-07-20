@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import '../models/counter.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../widgets/counter_form_dialog.dart';
+import 'counter_notes_page.dart';
 
 class CounterDetailPage extends StatefulWidget {
   final Counter counter;
   final void Function(int amount) onIncrement;
   final void Function(int amount) onDecrement;
   final void Function(String title, int? target) onEdit;
+  final void Function(String notes) onNotesChanged;
   final VoidCallback onDelete;
 
   const CounterDetailPage({
@@ -19,6 +21,7 @@ class CounterDetailPage extends StatefulWidget {
     required this.onIncrement,
     required this.onDecrement,
     required this.onEdit,
+    required this.onNotesChanged,
     required this.onDelete,
   });
 
@@ -55,6 +58,20 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
     setState(
       () =>
           _counter = _counter.copyWith(count: max(_counter.count - amount, 0)),
+    );
+  }
+
+  void _openNotes() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CounterNotesPage(
+          initialNotes: _counter.notes,
+          onSave: (notes) {
+            widget.onNotesChanged(notes);
+            setState(() => _counter = _counter.copyWith(notes: notes));
+          },
+        ),
+      ),
     );
   }
 
@@ -141,6 +158,33 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
                       onPressed: _increment,
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text('Notes', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: _openNotes,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    _counter.notes.isEmpty ? 'Add notes...' : _counter.notes,
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                    style: _counter.notes.isEmpty
+                        ? TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          )
+                        : null,
+                  ),
                 ),
               ),
             ],

@@ -116,6 +116,16 @@ class _HomePageState extends State<HomePage> {
     await _storage.saveCounters(_counters);
   }
 
+  Future<void> _updateNotes(Counter counter, String notes) async {
+    setState(() {
+      _counters = [
+        for (final c in _counters)
+          if (c.id == counter.id) c.copyWith(notes: notes) else c,
+      ];
+    });
+    await _storage.saveCounters(_counters);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,6 +156,8 @@ class _HomePageState extends State<HomePage> {
                                   _decrement(counter, amount),
                               onEdit: (title, target) =>
                                   _updateCounter(counter, title, target),
+                              onNotesChanged: (notes) =>
+                                  _updateNotes(counter, notes),
                               onDelete: () => _deleteCounter(counter),
                             ),
                           ),
@@ -157,8 +169,7 @@ class _HomePageState extends State<HomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
                                   child: Text(
@@ -182,9 +193,7 @@ class _HomePageState extends State<HomePage> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.remove_circle_outline,
-                                  ),
+                                  icon: const Icon(Icons.remove_circle_outline),
                                   onPressed: () =>
                                       _decrement(counter, _stepFor(counter)),
                                 ),
