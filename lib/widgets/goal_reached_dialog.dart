@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/counter.dart';
+import 'badge_icon.dart';
 import 'confetti_overlay.dart';
 
 /// Shows a celebratory popup for a newly earned [badge], with a confetti
@@ -9,6 +10,7 @@ Future<void> showGoalReachedDialog(
   BuildContext context, {
   required String counterTitle,
   required CounterBadge badge,
+  required int badgeColorIndex,
   required int currentCount,
   required void Function(int newTarget) onSetNewGoal,
 }) {
@@ -22,6 +24,7 @@ Future<void> showGoalReachedDialog(
       return _GoalReachedDialog(
         counterTitle: counterTitle,
         badge: badge,
+        badgeColorIndex: badgeColorIndex,
         currentCount: currentCount,
         onSetNewGoal: onSetNewGoal,
       );
@@ -39,12 +42,14 @@ Future<void> showGoalReachedDialog(
 class _GoalReachedDialog extends StatefulWidget {
   final String counterTitle;
   final CounterBadge badge;
+  final int badgeColorIndex;
   final int currentCount;
   final void Function(int newTarget) onSetNewGoal;
 
   const _GoalReachedDialog({
     required this.counterTitle,
     required this.badge,
+    required this.badgeColorIndex,
     required this.currentCount,
     required this.onSetNewGoal,
   });
@@ -87,8 +92,6 @@ class _GoalReachedDialogState extends State<_GoalReachedDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: ConfettiOverlay(
@@ -105,18 +108,10 @@ class _GoalReachedDialogState extends State<_GoalReachedDialog> {
                 builder: (context, value, child) {
                   return Transform.scale(scale: value, child: child);
                 },
-                child: Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.emoji_events,
-                    color: colorScheme.onPrimaryContainer,
-                    size: 48,
-                  ),
+                child: BadgeIcon(
+                  value: widget.badge.value,
+                  colorIndex: widget.badgeColorIndex,
+                  size: 88,
                 ),
               ),
               const SizedBox(height: 20),
