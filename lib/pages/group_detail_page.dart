@@ -6,6 +6,7 @@ import '../models/group_member.dart';
 import '../services/group_service.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/confirm_delete_dialog.dart';
+import '../widgets/goal_reached_dialog.dart';
 
 class GroupDetailPage extends StatefulWidget {
   final Group group;
@@ -20,6 +21,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
   final _groupService = GroupService();
   final _stepController = TextEditingController(text: '1');
   int _currentTotal = 0;
+  int? _lastKnownTotal;
 
   @override
   void dispose() {
@@ -132,6 +134,22 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
     );
   }
 
+  void _celebrateGoalReached(Group group, int target, int total) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showGoalReachedDialog(
+        context,
+        message: '"${group.name}" hit $total! Great teamwork.',
+        badgeValue: target,
+        badgeColorIndex: 0,
+        currentCount: total,
+        onSetNewGoal: (newTarget) {
+          _groupService.updateGroup(group.id, name: group.name, target: newTarget);
+        },
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final myUid = FirebaseAuth.instance.currentUser?.uid;
@@ -198,6 +216,16 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                 }
                 _currentTotal = total;
                 final target = group.target;
+
+                final previousTotal = _lastKnownTotal;
+                _lastKnownTotal = total;
+                if (target != null &&
+                    target > 0 &&
+                    previousTotal != null &&
+                    previousTotal < target &&
+                    total >= target) {
+                  _celebrateGoalReached(group, target, total);
+                }
 
                 return ListView(
                   padding: const EdgeInsets.all(12),

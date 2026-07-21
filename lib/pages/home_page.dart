@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/counter.dart';
 import '../services/counter_storage.dart';
 import '../widgets/counter_form_dialog.dart';
+import '../widgets/goal_reached_dialog.dart';
 import 'counter_detail_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -65,14 +66,38 @@ class _HomePageState extends State<HomePage> {
     await _storage.saveCounters(_counters);
   }
 
-  Future<void> _increment(Counter counter, int amount) async {
+  Future<void> _increment(
+    Counter counter,
+    int amount, {
+    bool celebrate = true,
+  }) async {
+    final updated = counter.incremented(amount);
+    final newlyEarnedBadge = updated.badges.length > counter.badges.length
+        ? updated.badges.last
+        : null;
+
     setState(() {
       _counters = [
         for (final c in _counters)
-          if (c.id == counter.id) c.incremented(amount) else c,
+          if (c.id == counter.id) updated else c,
       ];
     });
     await _storage.saveCounters(_counters);
+    if (!mounted) return;
+
+    if (celebrate && newlyEarnedBadge != null) {
+      showGoalReachedDialog(
+        context,
+        message:
+            '"${updated.title}" hit ${newlyEarnedBadge.value}. Badge earned!',
+        badgeValue: newlyEarnedBadge.value,
+        badgeColorIndex: updated.badges.length - 1,
+        currentCount: updated.count,
+        onSetNewGoal: (newTarget) {
+          _updateCounter(updated, updated.title, newTarget);
+        },
+      );
+    }
   }
 
   Future<void> _decrement(Counter counter, int amount) async {
@@ -163,8 +188,11 @@ class _HomePageState extends State<HomePage> {
                           MaterialPageRoute(
                             builder: (context) => CounterDetailPage(
                               counter: counter,
-                              onIncrement: (amount) =>
-                                  _increment(counter, amount),
+                              onIncrement: (amount) => _increment(
+                                counter,
+                                amount,
+                                celebrate: false,
+                              ),
                               onDecrement: (amount) =>
                                   _decrement(counter, amount),
                               onEdit: (title, target) =>

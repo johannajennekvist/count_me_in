@@ -19,6 +19,7 @@
 - [x] Wire up realtime updates so group totals update live across members
 - [x] Let the group creator edit name/goal, including converting to/from having a goal
 - [ ] Make invite codes actually unique — `_generateCode()` currently just picks 6 random chars with no check against existing codes in Firestore, so a collision (two groups sharing a code) is possible, just unlikely at small scale
+- [ ] Send a notification to all other group members when the group's goal is reached (currently the celebration popup only shows to whoever has the group screen open at that moment)
 
 **Accounts & profile**
 - [ ] Let users set a username instead of showing their full name/email-derived name to other group members
@@ -39,8 +40,8 @@
 - [x] Save the date a goal was reached
 - [ ] Award badges for group goals too (currently personal counters only)
 - [ ] Look into time-targeted goals and streaks (e.g. daily/weekly goals, consecutive-day streak tracking)
-- [ ] Show a celebratory popup when a goal is reached
-- [ ] From that popup, offer an option to raise/update the goal right there instead of needing to go find the edit button
+- [x] Show a celebratory popup when a goal is reached (personal counters and group goals)
+- [x] From that popup, offer an option to raise/update the goal right there instead of needing to go find the edit button
 - [x] Show a number on each badge icon for the value it was reached at, formatted compactly for large numbers (999 as-is, then 1k, 1.4k, 1M, etc.)
 - [x] Different colors of badge icons (5-color cycle by chronological order the goal was reached)
 

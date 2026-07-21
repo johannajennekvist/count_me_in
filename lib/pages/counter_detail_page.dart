@@ -61,8 +61,9 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
     if (newlyEarnedBadge != null) {
       showGoalReachedDialog(
         context,
-        counterTitle: _counter.title,
-        badge: newlyEarnedBadge,
+        message:
+            '"${_counter.title}" hit ${newlyEarnedBadge.value}. Badge earned!',
+        badgeValue: newlyEarnedBadge.value,
         badgeColorIndex: updated.badges.length - 1,
         currentCount: _counter.count,
         onSetNewGoal: (newTarget) {

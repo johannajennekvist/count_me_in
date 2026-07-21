@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../models/counter.dart';
 import 'app_dialog.dart';
 import 'badge_icon.dart';
 import 'confetti_overlay.dart';
 
-/// Shows a celebratory popup for a newly earned [badge], with a confetti
-/// burst, and lets the user immediately set a new target for the counter.
+/// Shows a celebratory popup for a newly reached goal, with a confetti
+/// burst, and lets the user immediately set a new target. Used for both
+/// personal counters and group goals.
 Future<void> showGoalReachedDialog(
   BuildContext context, {
-  required String counterTitle,
-  required CounterBadge badge,
+  required String message,
+  required int badgeValue,
   required int badgeColorIndex,
   required int currentCount,
   required void Function(int newTarget) onSetNewGoal,
@@ -23,8 +23,8 @@ Future<void> showGoalReachedDialog(
     transitionDuration: const Duration(milliseconds: 250),
     pageBuilder: (context, animation, secondaryAnimation) {
       return _GoalReachedDialog(
-        counterTitle: counterTitle,
-        badge: badge,
+        message: message,
+        badgeValue: badgeValue,
         badgeColorIndex: badgeColorIndex,
         currentCount: currentCount,
         onSetNewGoal: onSetNewGoal,
@@ -41,15 +41,15 @@ Future<void> showGoalReachedDialog(
 }
 
 class _GoalReachedDialog extends StatefulWidget {
-  final String counterTitle;
-  final CounterBadge badge;
+  final String message;
+  final int badgeValue;
   final int badgeColorIndex;
   final int currentCount;
   final void Function(int newTarget) onSetNewGoal;
 
   const _GoalReachedDialog({
-    required this.counterTitle,
-    required this.badge,
+    required this.message,
+    required this.badgeValue,
     required this.badgeColorIndex,
     required this.currentCount,
     required this.onSetNewGoal,
@@ -110,7 +110,7 @@ class _GoalReachedDialogState extends State<_GoalReachedDialog> {
                   return Transform.scale(scale: value, child: child);
                 },
                 child: BadgeIcon(
-                  value: widget.badge.value,
+                  value: widget.badgeValue,
                   colorIndex: widget.badgeColorIndex,
                   size: 88,
                 ),
@@ -119,7 +119,7 @@ class _GoalReachedDialogState extends State<_GoalReachedDialog> {
               const AppDialogTitle('Goal reached!', textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(
-                '"${widget.counterTitle}" hit ${widget.badge.value}. Badge earned!',
+                widget.message,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
