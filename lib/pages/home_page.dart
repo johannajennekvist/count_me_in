@@ -126,11 +126,14 @@ class _HomePageState extends State<HomePage> {
     await _storage.saveCounters(_counters);
   }
 
-  Future<void> _resetCounter(Counter counter) async {
+  Future<void> _resetCounter(Counter counter, bool clearBadges) async {
     setState(() {
       _counters = [
         for (final c in _counters)
-          if (c.id == counter.id) c.copyWith(count: 0) else c,
+          if (c.id == counter.id)
+            c.copyWith(count: 0, badges: clearBadges ? const [] : null)
+          else
+            c,
       ];
     });
     await _storage.saveCounters(_counters);
@@ -168,7 +171,8 @@ class _HomePageState extends State<HomePage> {
                                   _updateCounter(counter, title, target),
                               onNotesChanged: (notes) =>
                                   _updateNotes(counter, notes),
-                              onReset: () => _resetCounter(counter),
+                              onReset: (clearBadges) =>
+                                  _resetCounter(counter, clearBadges),
                               onDelete: () => _deleteCounter(counter),
                             ),
                           ),

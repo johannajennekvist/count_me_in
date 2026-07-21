@@ -13,7 +13,7 @@ class CounterDetailPage extends StatefulWidget {
   final void Function(int amount) onDecrement;
   final void Function(String title, int? target) onEdit;
   final void Function(String notes) onNotesChanged;
-  final VoidCallback onReset;
+  final void Function(bool clearBadges) onReset;
   final VoidCallback onDelete;
 
   const CounterDetailPage({
@@ -61,15 +61,55 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
     );
   }
 
-  void _confirmReset() {
-    showConfirmDeleteDialog(
-      context,
-      title: 'Reset counter',
-      message: 'Are you sure you want to reset "${_counter.title}" to 0?',
-      confirmLabel: 'Reset',
-      onConfirm: () {
-        widget.onReset();
-        setState(() => _counter = _counter.copyWith(count: 0));
+  Future<void> _confirmReset() async {
+    bool clearBadges = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Reset counter'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Are you sure you want to reset "${_counter.title}" to 0?',
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Also clear badges'),
+                    value: clearBadges,
+                    onChanged: (value) {
+                      setDialogState(() => clearBadges = value ?? false);
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    widget.onReset(clearBadges);
+                    setState(
+                      () => _counter = _counter.copyWith(
+                        count: 0,
+                        badges: clearBadges ? const [] : null,
+                      ),
+                    );
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Reset'),
+                ),
+              ],
+            );
+          },
+        );
       },
     );
   }
