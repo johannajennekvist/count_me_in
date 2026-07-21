@@ -138,7 +138,7 @@ class _GoalReachedDialogState extends State<_GoalReachedDialog> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     labelText: 'New target',
-                    hintText: 'e.g. ${_nextTenAbove(widget.currentCount)}',
+                    hintText: 'e.g. ${nextTenAbove(widget.currentCount)}',
                     helperText: 'Must be higher than ${widget.currentCount}',
                   ),
                   onSubmitted: (_) => _submitNewGoal(),
@@ -159,6 +159,3 @@ class _GoalReachedDialogState extends State<_GoalReachedDialog> {
     );
   }
 }
-
-/// The smallest multiple of ten strictly greater than [count].
-int _nextTenAbove(int count) => (count ~/ 10 + 1) * 10;

@@ -19,6 +19,7 @@ class GroupDetailPage extends StatefulWidget {
 class _GroupDetailPageState extends State<GroupDetailPage> {
   final _groupService = GroupService();
   final _stepController = TextEditingController(text: '1');
+  int _currentTotal = 0;
 
   @override
   void dispose() {
@@ -56,19 +57,22 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
     );
   }
 
-  Future<void> _showEditGroupDialog(Group group) async {
+  Future<void> _showEditGroupDialog(Group group, int currentTotal) async {
     final nameController = TextEditingController(text: group.name);
     final targetController = TextEditingController(
       text: group.target?.toString() ?? '',
     );
     bool hasTarget = group.target != null;
-    String? errorMessage;
 
     await showDialog<void>(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final target = int.tryParse(targetController.text);
+            final isTargetValid =
+                !hasTarget || (target != null && target > currentTotal);
+
             return AppDialog(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -92,47 +96,32 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                   if (hasTarget)
                     TextField(
                       controller: targetController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Target count',
+                        hintText: 'e.g. ${nextTenAbove(currentTotal)}',
+                        helperText: 'Must be higher than $currentTotal',
                       ),
                       keyboardType: TextInputType.number,
+                      onChanged: (_) => setDialogState(() {}),
                     ),
-                  if (errorMessage != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      errorMessage!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ],
                   const SizedBox(height: 24),
                   AppDialogActions(
                     secondaryLabel: 'Cancel',
                     onSecondary: () => Navigator.of(context).pop(),
                     primaryLabel: 'Save',
-                    onPrimary: () async {
-                      final name = nameController.text.trim();
-                      if (name.isEmpty) return;
+                    onPrimary: isTargetValid
+                        ? () async {
+                            final name = nameController.text.trim();
+                            if (name.isEmpty) return;
 
-                      int? target;
-                      if (hasTarget) {
-                        target = int.tryParse(targetController.text);
-                        if (target == null || target <= 0) {
-                          setDialogState(
-                            () => errorMessage = 'Enter a valid target',
-                          );
-                          return;
-                        }
-                      }
-
-                      await _groupService.updateGroup(
-                        group.id,
-                        name: name,
-                        target: target,
-                      );
-                      if (context.mounted) Navigator.of(context).pop();
-                    },
+                            await _groupService.updateGroup(
+                              group.id,
+                              name: name,
+                              target: hasTarget ? target : null,
+                            );
+                            if (context.mounted) Navigator.of(context).pop();
+                          }
+                        : null,
                   ),
                 ],
               ),
@@ -159,7 +148,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
             actions: [
               if (group.createdBy == myUid)
                 IconButton(
-                  onPressed: () => _showEditGroupDialog(group),
+                  onPressed: () => _showEditGroupDialog(group, _currentTotal),
                   icon: const Icon(Icons.edit_outlined),
                   tooltip: 'Edit group',
                 ),
@@ -207,6 +196,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                 for (final member in members) {
                   total += member.tally;
                 }
+                _currentTotal = total;
                 final target = group.target;
 
                 return ListView(

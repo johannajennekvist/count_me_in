@@ -19,13 +19,17 @@ class _GroupsListPageState extends State<GroupsListPage> {
     final nameController = TextEditingController();
     final targetController = TextEditingController();
     bool hasTarget = false;
-    String? errorMessage;
+    const currentTotal = 0;
 
     await showDialog<void>(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final target = int.tryParse(targetController.text);
+            final isTargetValid =
+                !hasTarget || (target != null && target > currentTotal);
+
             return AppDialog(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -49,46 +53,31 @@ class _GroupsListPageState extends State<GroupsListPage> {
                   if (hasTarget)
                     TextField(
                       controller: targetController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Target count',
+                        hintText: 'e.g. ${nextTenAbove(currentTotal)}',
+                        helperText: 'Must be higher than $currentTotal',
                       ),
                       keyboardType: TextInputType.number,
+                      onChanged: (_) => setDialogState(() {}),
                     ),
-                  if (errorMessage != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      errorMessage!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ],
                   const SizedBox(height: 24),
                   AppDialogActions(
                     secondaryLabel: 'Cancel',
                     onSecondary: () => Navigator.of(context).pop(),
                     primaryLabel: 'Create',
-                    onPrimary: () async {
-                      final name = nameController.text.trim();
-                      if (name.isEmpty) return;
+                    onPrimary: isTargetValid
+                        ? () async {
+                            final name = nameController.text.trim();
+                            if (name.isEmpty) return;
 
-                      int? target;
-                      if (hasTarget) {
-                        target = int.tryParse(targetController.text);
-                        if (target == null || target <= 0) {
-                          setDialogState(
-                            () => errorMessage = 'Enter a valid target',
-                          );
-                          return;
-                        }
-                      }
-
-                      await _groupService.createGroup(
-                        name: name,
-                        target: target,
-                      );
-                      if (context.mounted) Navigator.of(context).pop();
-                    },
+                            await _groupService.createGroup(
+                              name: name,
+                              target: hasTarget ? target : null,
+                            );
+                            if (context.mounted) Navigator.of(context).pop();
+                          }
+                        : null,
                   ),
                 ],
               ),

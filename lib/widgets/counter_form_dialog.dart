@@ -9,6 +9,7 @@ Future<void> showCounterFormDialog(
   required void Function(String title, int? target) onSubmit,
 }) async {
   final isEditing = existing != null;
+  final currentCount = existing?.count ?? 0;
   final titleController = TextEditingController(text: existing?.title);
   final targetController = TextEditingController(
     text: existing?.target?.toString() ?? '',
@@ -20,6 +21,10 @@ Future<void> showCounterFormDialog(
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setDialogState) {
+          final target = int.tryParse(targetController.text);
+          final isTargetValid =
+              !hasTarget || (target != null && target > currentCount);
+
           return AppDialog(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -43,29 +48,28 @@ Future<void> showCounterFormDialog(
                 if (hasTarget)
                   TextField(
                     controller: targetController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Target count',
+                      hintText: 'e.g. ${nextTenAbove(currentCount)}',
+                      helperText: 'Must be higher than $currentCount',
                     ),
                     keyboardType: TextInputType.number,
+                    onChanged: (_) => setDialogState(() {}),
                   ),
                 const SizedBox(height: 24),
                 AppDialogActions(
                   secondaryLabel: 'Cancel',
                   onSecondary: () => Navigator.of(context).pop(),
                   primaryLabel: isEditing ? 'Save' : 'Add',
-                  onPrimary: () {
-                    final title = titleController.text.trim();
-                    if (title.isEmpty) return;
+                  onPrimary: isTargetValid
+                      ? () {
+                          final title = titleController.text.trim();
+                          if (title.isEmpty) return;
 
-                    int? target;
-                    if (hasTarget) {
-                      target = int.tryParse(targetController.text);
-                      if (target == null || target <= 0) return;
-                    }
-
-                    onSubmit(title, target);
-                    Navigator.of(context).pop();
-                  },
+                          onSubmit(title, hasTarget ? target : null);
+                          Navigator.of(context).pop();
+                        }
+                      : null,
                 ),
               ],
             ),
