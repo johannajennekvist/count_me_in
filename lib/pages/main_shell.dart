@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/tally_icon.dart';
 import 'groups_list_page.dart';
 import 'home_page.dart';
 import 'settings_page.dart';
@@ -26,7 +27,7 @@ class _MainShellState extends State<MainShell> {
             setState(() => _selectedIndex = index),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.groups), label: 'Groups'),
-          NavigationDestination(icon: Icon(Icons.numbers), label: 'Counters'),
+          NavigationDestination(icon: TallyIcon(), label: 'Counters'),
           NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
