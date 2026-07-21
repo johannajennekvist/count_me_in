@@ -209,6 +209,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                       target != null
                           ? 'Team goal: $total / $target'
                           : 'Team total: $total',
+                      textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     if (target != null) ...[

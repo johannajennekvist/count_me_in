@@ -131,16 +131,20 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.opaque,
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                progress == null
-                    ? '${_counter.count}'
-                    : '${_counter.count} / ${_counter.target}',
-                style: Theme.of(context).textTheme.headlineMedium,
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  progress == null
+                      ? '${_counter.count}'
+                      : '${_counter.count} / ${_counter.target}',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
               ),
               if (progress != null) ...[
                 const SizedBox(height: 12),
@@ -206,30 +210,32 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
-              Text('Badges', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              if (_counter.badges.isEmpty)
-                Text(
-                  'Reach your goal to earn a badge!',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+              if (_counter.target != null) ...[
+                const SizedBox(height: 32),
+                Text('Badges', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                if (_counter.badges.isEmpty)
+                  Text(
+                    'Reach your goal to earn a badge!',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  )
+                else
+                  SizedBox(
+                    height: 84,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _counter.badges.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        final badges = _counter.badges.reversed.toList();
+                        return _BadgeChip(badge: badges[index]);
+                      },
+                    ),
                   ),
-                )
-              else
-                SizedBox(
-                  height: 84,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _counter.badges.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      final badges = _counter.badges.reversed.toList();
-                      return _BadgeChip(badge: badges[index]);
-                    },
-                  ),
-                ),
+              ],
             ],
           ),
         ),
