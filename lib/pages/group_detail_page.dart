@@ -257,10 +257,24 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                           .incrementMyTally(group.id, _step),
                                     ),
                                     const SizedBox(width: 8),
-                                    Text('${members[i].tally}'),
+                                    Text(
+                                      '${members[i].tally}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
                                   ],
                                 )
-                              : Text('${members[i].tally}'),
+                              : Text(
+                                  '${members[i].tally}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(fontWeight: FontWeight.w600),
+                                ),
                         ),
                       ),
                   ],
