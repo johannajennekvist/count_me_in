@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/group.dart';
 import '../services/group_service.dart';
+import '../widgets/app_dialog.dart';
 import 'group_detail_page.dart';
 
 class GroupsListPage extends StatefulWidget {
@@ -25,11 +26,13 @@ class _GroupsListPageState extends State<GroupsListPage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('Create a group'),
-              content: Column(
+            return AppDialog(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const AppDialogTitle('Create a group'),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: nameController,
                     decoration: const InputDecoration(labelText: 'Name'),
@@ -60,35 +63,35 @@ class _GroupsListPageState extends State<GroupsListPage> {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 24),
+                  AppDialogActions(
+                    secondaryLabel: 'Cancel',
+                    onSecondary: () => Navigator.of(context).pop(),
+                    primaryLabel: 'Create',
+                    onPrimary: () async {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) return;
+
+                      int? target;
+                      if (hasTarget) {
+                        target = int.tryParse(targetController.text);
+                        if (target == null || target <= 0) {
+                          setDialogState(
+                            () => errorMessage = 'Enter a valid target',
+                          );
+                          return;
+                        }
+                      }
+
+                      await _groupService.createGroup(
+                        name: name,
+                        target: target,
+                      );
+                      if (context.mounted) Navigator.of(context).pop();
+                    },
+                  ),
                 ],
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    final name = nameController.text.trim();
-                    if (name.isEmpty) return;
-
-                    int? target;
-                    if (hasTarget) {
-                      target = int.tryParse(targetController.text);
-                      if (target == null || target <= 0) {
-                        setDialogState(
-                          () => errorMessage = 'Enter a valid target',
-                        );
-                        return;
-                      }
-                    }
-
-                    await _groupService.createGroup(name: name, target: target);
-                    if (context.mounted) Navigator.of(context).pop();
-                  },
-                  child: const Text('Create'),
-                ),
-              ],
             );
           },
         );
@@ -105,11 +108,13 @@ class _GroupsListPageState extends State<GroupsListPage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('Join a group'),
-              content: Column(
+            return AppDialog(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const AppDialogTitle('Join a group'),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: codeController,
                     decoration: const InputDecoration(labelText: 'Code'),
@@ -125,27 +130,24 @@ class _GroupsListPageState extends State<GroupsListPage> {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 24),
+                  AppDialogActions(
+                    secondaryLabel: 'Cancel',
+                    onSecondary: () => Navigator.of(context).pop(),
+                    primaryLabel: 'Join',
+                    onPrimary: () async {
+                      final code = codeController.text.trim();
+                      if (code.isEmpty) return;
+                      try {
+                        await _groupService.joinGroupByCode(code);
+                        if (context.mounted) Navigator.of(context).pop();
+                      } on StateError catch (e) {
+                        setDialogState(() => errorMessage = e.message);
+                      }
+                    },
+                  ),
                 ],
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    final code = codeController.text.trim();
-                    if (code.isEmpty) return;
-                    try {
-                      await _groupService.joinGroupByCode(code);
-                      if (context.mounted) Navigator.of(context).pop();
-                    } on StateError catch (e) {
-                      setDialogState(() => errorMessage = e.message);
-                    }
-                  },
-                  child: const Text('Join'),
-                ),
-              ],
             );
           },
         );

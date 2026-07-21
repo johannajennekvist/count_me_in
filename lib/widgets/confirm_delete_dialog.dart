@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_dialog.dart';
+
 Future<void> showConfirmDeleteDialog(
   BuildContext context, {
   required String title,
@@ -10,22 +12,26 @@ Future<void> showConfirmDeleteDialog(
   await showDialog<void>(
     context: context,
     builder: (context) {
-      return AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              onConfirm();
-              Navigator.of(context).pop();
-            },
-            child: Text(confirmLabel),
-          ),
-        ],
+      return AppDialog(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppDialogTitle(title),
+            const SizedBox(height: 8),
+            Text(message, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 24),
+            AppDialogActions(
+              secondaryLabel: 'Cancel',
+              onSecondary: () => Navigator.of(context).pop(),
+              primaryLabel: confirmLabel,
+              onPrimary: () {
+                onConfirm();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
       );
     },
   );

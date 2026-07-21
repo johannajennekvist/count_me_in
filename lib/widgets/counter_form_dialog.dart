@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/counter.dart';
+import 'app_dialog.dart';
 
 Future<void> showCounterFormDialog(
   BuildContext context, {
@@ -19,11 +20,13 @@ Future<void> showCounterFormDialog(
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setDialogState) {
-          return AlertDialog(
-            title: Text(isEditing ? 'Edit counter' : 'Add counter'),
-            content: Column(
+          return AppDialog(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                AppDialogTitle(isEditing ? 'Edit counter' : 'Add counter'),
+                const SizedBox(height: 16),
                 TextField(
                   controller: titleController,
                   decoration: const InputDecoration(labelText: 'Name'),
@@ -45,30 +48,27 @@ Future<void> showCounterFormDialog(
                     ),
                     keyboardType: TextInputType.number,
                   ),
+                const SizedBox(height: 24),
+                AppDialogActions(
+                  secondaryLabel: 'Cancel',
+                  onSecondary: () => Navigator.of(context).pop(),
+                  primaryLabel: isEditing ? 'Save' : 'Add',
+                  onPrimary: () {
+                    final title = titleController.text.trim();
+                    if (title.isEmpty) return;
+
+                    int? target;
+                    if (hasTarget) {
+                      target = int.tryParse(targetController.text);
+                      if (target == null || target <= 0) return;
+                    }
+
+                    onSubmit(title, target);
+                    Navigator.of(context).pop();
+                  },
+                ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  final title = titleController.text.trim();
-                  if (title.isEmpty) return;
-
-                  int? target;
-                  if (hasTarget) {
-                    target = int.tryParse(targetController.text);
-                    if (target == null || target <= 0) return;
-                  }
-
-                  onSubmit(title, target);
-                  Navigator.of(context).pop();
-                },
-                child: Text(isEditing ? 'Save' : 'Add'),
-              ),
-            ],
           );
         },
       );

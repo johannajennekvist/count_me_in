@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/counter.dart';
+import 'app_dialog.dart';
 import 'badge_icon.dart';
 import 'confetti_overlay.dart';
 
@@ -93,7 +94,7 @@ class _GoalReachedDialogState extends State<_GoalReachedDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: appDialogShape,
       child: ConfettiOverlay(
         key: _confettiKey,
         child: Padding(
@@ -115,12 +116,7 @@ class _GoalReachedDialogState extends State<_GoalReachedDialog> {
                 ),
               ),
               const SizedBox(height: 20),
-              Text(
-                'Goal reached!',
-                style: Theme.of(
-                  context,
-                ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-              ),
+              const AppDialogTitle('Goal reached!', textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(
                 '"${widget.counterTitle}" hit ${widget.badge.value}. Badge earned!',
@@ -129,22 +125,11 @@ class _GoalReachedDialogState extends State<_GoalReachedDialog> {
               ),
               const SizedBox(height: 24),
               if (!_settingNewGoal) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => setState(() => _settingNewGoal = true),
-                        child: const Text('New goal'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Keep going'),
-                      ),
-                    ),
-                  ],
+                AppDialogActions(
+                  secondaryLabel: 'New goal',
+                  onSecondary: () => setState(() => _settingNewGoal = true),
+                  primaryLabel: 'Keep going',
+                  onPrimary: () => Navigator.of(context).pop(),
                 ),
               ] else ...[
                 TextField(
@@ -160,23 +145,11 @@ class _GoalReachedDialogState extends State<_GoalReachedDialog> {
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () =>
-                            setState(() => _settingNewGoal = false),
-                        child: const Text('Back'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: _isNewTargetValid ? _submitNewGoal : null,
-                        child: const Text('Save'),
-                      ),
-                    ),
-                  ],
+                AppDialogActions(
+                  secondaryLabel: 'Back',
+                  onSecondary: () => setState(() => _settingNewGoal = false),
+                  primaryLabel: 'Save',
+                  onPrimary: _isNewTargetValid ? _submitNewGoal : null,
                 ),
               ],
             ],

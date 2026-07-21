@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../models/counter.dart';
+import '../widgets/app_dialog.dart';
 import '../widgets/badge_icon.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../widgets/counter_form_dialog.dart';
@@ -94,14 +95,16 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('Reset counter'),
-              content: Column(
+            return AppDialog(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const AppDialogTitle('Reset counter'),
+                  const SizedBox(height: 8),
                   Text(
                     'Are you sure you want to reset "${_counter.title}" to 0?',
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
@@ -111,27 +114,24 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
                       setDialogState(() => clearBadges = value ?? false);
                     },
                   ),
+                  const SizedBox(height: 24),
+                  AppDialogActions(
+                    secondaryLabel: 'Cancel',
+                    onSecondary: () => Navigator.of(context).pop(),
+                    primaryLabel: 'Reset',
+                    onPrimary: () {
+                      widget.onReset(clearBadges);
+                      setState(
+                        () => _counter = _counter.copyWith(
+                          count: 0,
+                          badges: clearBadges ? const [] : null,
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                    },
+                  ),
                 ],
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    widget.onReset(clearBadges);
-                    setState(
-                      () => _counter = _counter.copyWith(
-                        count: 0,
-                        badges: clearBadges ? const [] : null,
-                      ),
-                    );
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Reset'),
-                ),
-              ],
             );
           },
         );
