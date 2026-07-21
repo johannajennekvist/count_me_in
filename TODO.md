@@ -41,8 +41,8 @@
 - [ ] Look into time-targeted goals and streaks (e.g. daily/weekly goals, consecutive-day streak tracking)
 - [ ] Show a celebratory popup when a goal is reached
 - [ ] From that popup, offer an option to raise/update the goal right there instead of needing to go find the edit button
-- [ ] Show a number on each badge icon for the value it was reached at, formatted compactly for large numbers (e.g. up to 999 as-is, then 1k, 1.4k, etc.)
-- [ ] Different colors/types of badge icons (e.g. vary by milestone size, streak vs. one-off, or let the badge look reflect something about the counter)
+- [x] Show a number on each badge icon for the value it was reached at, formatted compactly for large numbers (999 as-is, then 1k, 1.4k, 1M, etc.)
+- [x] Different colors of badge icons (5-color cycle by chronological order the goal was reached)
 
 **Visuals & platform features**
 - [ ] Investigate icon language/style options — look at swapping from Material Icons to a different consistent icon set (or a specific style variant, e.g. outlined vs. filled) to better match the app's look

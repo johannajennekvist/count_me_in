@@ -263,7 +263,7 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
                   )
                 else
                   SizedBox(
-                    height: 84,
+                    height: 92,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _counter.badges.length,
@@ -271,7 +271,12 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
                           const SizedBox(width: 12),
                       itemBuilder: (context, index) {
                         final badges = _counter.badges.reversed.toList();
-                        return _BadgeChip(badge: badges[index]);
+                        final chronologicalIndex =
+                            _counter.badges.length - 1 - index;
+                        return _BadgeChip(
+                          badge: badges[index],
+                          colorIndex: chronologicalIndex % _badgeColors.length,
+                        );
                       },
                     ),
                   ),
@@ -299,32 +304,83 @@ const _monthAbbrev = [
   'Dec',
 ];
 
+const _badgeColors = [
+  (Colors.amber, Color(0xFF8A6D00)),
+  (Colors.lightBlue, Color(0xFF00587A)),
+  (Colors.purple, Color(0xFF6A1B9A)),
+  (Colors.pink, Color(0xFFAD1457)),
+  (Colors.teal, Color(0xFF00695C)),
+];
+
+String _formatCompact(int value) {
+  if (value < 1000) return '$value';
+  final divisor = value < 1000000 ? 1000 : 1000000;
+  final suffix = value < 1000000 ? 'k' : 'M';
+  final scaled = (value / divisor * 10).round() / 10;
+  final isWhole = scaled == scaled.roundToDouble();
+  return '${isWhole ? scaled.toInt() : scaled}$suffix';
+}
+
 class _BadgeChip extends StatelessWidget {
   final CounterBadge badge;
+  final int colorIndex;
 
-  const _BadgeChip({required this.badge});
+  const _BadgeChip({required this.badge, required this.colorIndex});
 
   @override
   Widget build(BuildContext context) {
+    final (background, foreground) = _badgeColors[colorIndex];
+
     return SizedBox(
       width: 64,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
+          SizedBox(
             width: 56,
             height: 56,
-            decoration: BoxDecoration(
-              color: Colors.amber.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.emoji_events,
-              color: Colors.amber.shade800,
-              size: 28,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: background.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.emoji_events, color: foreground, size: 28),
+                ),
+                Positioned(
+                  right: -4,
+                  bottom: -4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: foreground,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Text(
+                      _formatCompact(badge.value),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
             '${_monthAbbrev[badge.reachedAt.month - 1]} ${badge.reachedAt.day}',
             style: Theme.of(context).textTheme.bodySmall,
