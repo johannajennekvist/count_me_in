@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _counters = [
         for (final c in _counters)
-          if (c.id == counter.id) c.copyWith(count: c.count + amount) else c,
+          if (c.id == counter.id) c.incremented(amount) else c,
       ];
     });
     await _storage.saveCounters(_counters);

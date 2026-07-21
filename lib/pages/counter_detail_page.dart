@@ -49,9 +49,7 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
   void _increment() {
     final amount = _step;
     widget.onIncrement(amount);
-    setState(
-      () => _counter = _counter.copyWith(count: _counter.count + amount),
-    );
+    setState(() => _counter = _counter.incremented(amount));
   }
 
   void _decrement() {
@@ -208,9 +206,85 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 32),
+              Text('Badges', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              if (_counter.badges.isEmpty)
+                Text(
+                  'Reach your goal to earn a badge!',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                )
+              else
+                SizedBox(
+                  height: 84,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _counter.badges.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      final badges = _counter.badges.reversed.toList();
+                      return _BadgeChip(badge: badges[index]);
+                    },
+                  ),
+                ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+const _monthAbbrev = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+class _BadgeChip extends StatelessWidget {
+  final CounterBadge badge;
+
+  const _BadgeChip({required this.badge});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 64,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.amber.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.emoji_events,
+              color: Colors.amber.shade800,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${_monthAbbrev[badge.reachedAt.month - 1]} ${badge.reachedAt.day}',
+            style: Theme.of(context).textTheme.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
