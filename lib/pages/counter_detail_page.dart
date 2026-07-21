@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/counter.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../widgets/counter_form_dialog.dart';
+import '../widgets/goal_reached_dialog.dart';
 import 'counter_notes_page.dart';
 
 class CounterDetailPage extends StatefulWidget {
@@ -49,7 +50,29 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
   void _increment() {
     final amount = _step;
     widget.onIncrement(amount);
-    setState(() => _counter = _counter.incremented(amount));
+    final updated = _counter.incremented(amount);
+    final newlyEarnedBadge = updated.badges.length > _counter.badges.length
+        ? updated.badges.last
+        : null;
+    setState(() => _counter = updated);
+
+    if (newlyEarnedBadge != null) {
+      showGoalReachedDialog(
+        context,
+        counterTitle: _counter.title,
+        badge: newlyEarnedBadge,
+        currentCount: _counter.count,
+        onSetNewGoal: (newTarget) {
+          widget.onEdit(_counter.title, newTarget);
+          setState(
+            () => _counter = _counter.withDetails(
+              title: _counter.title,
+              target: newTarget,
+            ),
+          );
+        },
+      );
+    }
   }
 
   void _decrement() {
