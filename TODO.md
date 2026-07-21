@@ -18,15 +18,35 @@
 - [x] Build group detail screen showing group total + per-member breakdown
 - [x] Wire up realtime updates so group totals update live across members
 - [x] Let the group creator edit name/goal, including converting to/from having a goal
+- [ ] Make invite codes actually unique — `_generateCode()` currently just picks 6 random chars with no check against existing codes in Firestore, so a collision (two groups sharing a code) is possible, just unlikely at small scale
+
+**Accounts & profile**
+- [ ] Let users set a username instead of showing their full name/email-derived name to other group members
+- [ ] Improve the login flow (revisit UX, consider additional sign-in options)
+
+**Friends & social**
+- [ ] Look into a friends system — add/accept friends
+- [ ] Let friends view each other's counters on a profile page
+- [ ] Send a notification when a friend reaches a goal
+- [ ] Invite friends directly to a group counter (instead of only sharing a code)
 
 **Leaderboards**
 - [x] Build a leaderboard view ranking members within a group task by tally
 - [ ] Decide tie-breaking and time-window rules (all-time vs. reset periodically)
 
 **Achievements / badges**
-- [ ] Award a badge when a counter or group goal is reached (target hit)
-- [ ] Save the date a goal was reached
-- [ ] Design what a badge actually looks like / where it's shown (not scoped yet — no implementation until this is fleshed out)
+- [x] Award a badge when a personal counter's goal is reached (target hit), shown as a horizontal scrollable viewer under Notes, capped at the latest 15
+- [x] Save the date a goal was reached
+- [ ] Award badges for group goals too (currently personal counters only)
+- [ ] Look into time-targeted goals and streaks (e.g. daily/weekly goals, consecutive-day streak tracking)
+- [ ] Show a celebratory popup when a goal is reached
+- [ ] From that popup, offer an option to raise/update the goal right there instead of needing to go find the edit button
+- [ ] Show a number on each badge icon for the value it was reached at, formatted compactly for large numbers (e.g. up to 999 as-is, then 1k, 1.4k, etc.)
+- [ ] Different colors/types of badge icons (e.g. vary by milestone size, streak vs. one-off, or let the badge look reflect something about the counter)
+
+**Visuals & platform features**
+- [ ] Investigate icon language/style options — look at swapping from Material Icons to a different consistent icon set (or a specific style variant, e.g. outlined vs. filled) to better match the app's look
+- [ ] Investigate an iOS home screen widget (WidgetKit) for incrementing/decrementing a counter without opening the app
 
 **Distribution**
 - [ ] Enroll in the Apple Developer Program ($99/yr) when ready to share beyond your own device
