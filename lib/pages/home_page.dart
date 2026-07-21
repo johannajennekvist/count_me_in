@@ -238,6 +238,7 @@ class _HomePageState extends State<HomePage> {
               ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'home_page_fab',
         onPressed: () => showCounterFormDialog(
           context,
           onSubmit: (title, target) => _addCounter(title, target),

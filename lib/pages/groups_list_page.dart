@@ -231,6 +231,7 @@ class _GroupsListPageState extends State<GroupsListPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'groups_list_page_fab',
         onPressed: _showAddOptions,
         tooltip: 'Add group',
         child: const Icon(Icons.add),
