@@ -19,11 +19,12 @@
 - [x] Build group detail screen showing group total + per-member breakdown
 - [x] Wire up realtime updates so group totals update live across members
 - [x] Let the group creator edit name/goal, including converting to/from having a goal
+- [x] Let the group creator remove a member, with a confirm popup (Firestore rules enforce creator-only, not just the UI)
+- [ ] Move member removal into the "Edit group" menu instead of a remove icon sitting on every member row — cleaner member list, removal action grouped with the other admin-only actions
 - [x] Add copy-to-clipboard on the invite code popup, with visual feedback that it was copied
 - [x] Add a "Share" button on the invite code popup using the native share sheet (`share_plus`), sharing the code as plain text
 - [ ] Upgrade invite sharing to a tappable deep link that opens the app straight to "join this group" (skips manually typing the code). Needs Universal Links (iOS) / App Links (Android): a domain to host `apple-app-site-association` / `assetlinks.json` over HTTPS, Associated Domains + intent filter config in the native projects, and an `app_links`-based listener in Flutter to catch the incoming URL and route to the join flow. Bigger lift than the plain-text share — worth doing once there's real distribution (ties into the Distribution section below)
 - [ ] Make invite codes actually unique — `_generateCode()` currently just picks 6 random chars with no check against existing codes in Firestore, so a collision (two groups sharing a code) is possible, just unlikely at small scale
-- [ ] Send a notification to all other group members when the group's goal is reached (currently the celebration popup only shows to whoever has the group screen open at that moment)
 
 **Accounts & profile**
 - [x] Add a guest/offline mode — "Continue without an account" on the login page, personal counters stored on-device only (SharedPreferences), no cloud sync; Groups tab shows a sign-in prompt since group tasks are inherently multi-user
@@ -37,8 +38,11 @@
 **Friends & social**
 - [ ] Look into a friends system — add/accept friends
 - [ ] Let friends view each other's counters on a profile page
-- [ ] Send a notification when a friend reaches a goal
 - [ ] Invite friends directly to a group counter (instead of only sharing a code)
+
+**Notifications**
+- [ ] In-app notification/activity log — a per-user feed of group/friend activity (goal reached, badge earned, member joined, etc.), shown via a bell icon + unread count and a list screen. No new infra needed: fan out a doc to each relevant user's `notifications` subcollection when the event happens (same pattern already used for badge-awarding), pure Firestore + Flutter, no Cloud Functions or push permissions required. Natural first step since it works the moment someone opens the app, even without push
+- [ ] Support push notifications (FCM) — real device pings for group/friend activity. Needs `firebase_messaging`, storing each device's push token in Firestore, a Cloud Function (requires upgrading the Firebase project to the Blaze pay-as-you-go plan) that fans out sends via the Admin SDK when the relevant event fires, plus native setup: APNs push certs/keys in the Firebase console + Push Notifications capability in Xcode for iOS, less friction on Android. Bigger lift than the in-app log above — worth doing once there are enough real users for immediate pings to matter
 
 **Leaderboards**
 - [x] Build a leaderboard view ranking members within a group task by tally

@@ -128,6 +128,18 @@ class GroupService {
     return group;
   }
 
+  /// Removes a member from the group. Only the group creator can do this
+  /// (enforced by Firestore security rules, not just the UI).
+  Future<void> removeMember(String groupId, String uid) async {
+    final groupRef = _groups.doc(groupId);
+    final batch = _firestore.batch();
+    batch.update(groupRef, {
+      'memberIds': FieldValue.arrayRemove([uid]),
+    });
+    batch.delete(groupRef.collection('members').doc(uid));
+    await batch.commit();
+  }
+
   Future<void> deleteGroup(String groupId) async {
     final groupRef = _groups.doc(groupId);
     final membersSnapshot = await groupRef.collection('members').get();

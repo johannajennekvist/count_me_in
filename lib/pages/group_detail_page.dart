@@ -210,6 +210,18 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
     );
   }
 
+  void _confirmRemoveMember(Group group, GroupMember member) {
+    showConfirmDeleteDialog(
+      context,
+      title: 'Remove member',
+      message:
+          'Are you sure you want to remove ${member.displayName} from '
+          '"${group.name}"?',
+      confirmLabel: 'Remove',
+      onConfirm: () => _groupService.removeMember(group.id, member.uid),
+    );
+  }
+
   void _celebrateGoalReached(Group group, int target, int total) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -370,12 +382,33 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                     ),
                                   ],
                                 )
-                              : Text(
-                                  '${members[i].tally}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall
-                                      ?.copyWith(fontWeight: FontWeight.w600),
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${members[i].tally}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    if (group.createdBy == myUid)
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.person_remove_outlined,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.error,
+                                        ),
+                                        tooltip: 'Remove member',
+                                        onPressed: () => _confirmRemoveMember(
+                                          group,
+                                          members[i],
+                                        ),
+                                      ),
+                                  ],
                                 ),
                         ),
                       ),
