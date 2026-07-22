@@ -292,6 +292,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                 }
                 _currentTotal = total;
                 final target = group.target;
+                final adminName = _adminDisplayName(members, group.createdBy);
 
                 final previousTotal = _lastKnownTotal;
                 _lastKnownTotal = total;
@@ -378,6 +379,13 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                 ),
                         ),
                       ),
+                    const SizedBox(height: 24),
+                    Text('Admin', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    Text(
+                      adminName,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     if (target != null) ...[
                       const SizedBox(height: 24),
                       Text(
@@ -421,6 +429,13 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
       },
     );
   }
+}
+
+String _adminDisplayName(List<GroupMember> members, String creatorUid) {
+  for (final member in members) {
+    if (member.uid == creatorUid) return member.displayName;
+  }
+  return 'Unknown';
 }
 
 class _GroupBadgeChip extends StatelessWidget {
