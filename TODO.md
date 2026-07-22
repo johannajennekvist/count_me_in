@@ -19,6 +19,9 @@
 - [x] Build group detail screen showing group total + per-member breakdown
 - [x] Wire up realtime updates so group totals update live across members
 - [x] Let the group creator edit name/goal, including converting to/from having a goal
+- [x] Add copy-to-clipboard on the invite code popup, with visual feedback that it was copied
+- [x] Add a "Share" button on the invite code popup using the native share sheet (`share_plus`), sharing the code as plain text
+- [ ] Upgrade invite sharing to a tappable deep link that opens the app straight to "join this group" (skips manually typing the code). Needs Universal Links (iOS) / App Links (Android): a domain to host `apple-app-site-association` / `assetlinks.json` over HTTPS, Associated Domains + intent filter config in the native projects, and an `app_links`-based listener in Flutter to catch the incoming URL and route to the join flow. Bigger lift than the plain-text share — worth doing once there's real distribution (ties into the Distribution section below)
 - [ ] Make invite codes actually unique — `_generateCode()` currently just picks 6 random chars with no check against existing codes in Firestore, so a collision (two groups sharing a code) is possible, just unlikely at small scale
 - [ ] Send a notification to all other group members when the group's goal is reached (currently the celebration popup only shows to whoever has the group screen open at that moment)
 

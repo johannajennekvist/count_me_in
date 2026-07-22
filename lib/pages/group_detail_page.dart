@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../models/group.dart';
 import '../models/group_member.dart';
@@ -36,27 +38,100 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
   }
 
   void _showInviteCode(Group group) {
+    var justCopied = false;
+
     showDialog<void>(
       context: context,
-      builder: (context) => AppDialog(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AppDialogTitle('Invite code'),
-            const SizedBox(height: 8),
-            Text(
-              'Share this code so others can join "${group.name}":\n\n${group.code}',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 24),
-            AppDialogActions(
-              primaryLabel: 'Close',
-              onPrimary: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ),
-      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            Future<void> copyCode() async {
+              await Clipboard.setData(ClipboardData(text: group.code));
+              setDialogState(() => justCopied = true);
+              Future.delayed(const Duration(seconds: 2), () {
+                if (context.mounted) setDialogState(() => justCopied = false);
+              });
+            }
+
+            void shareCode() {
+              SharePlus.instance.share(
+                ShareParams(
+                  text:
+                      'Join my group "${group.name}" on Count Me In! '
+                      'Use invite code ${group.code} to join.',
+                ),
+              );
+            }
+
+            return AppDialog(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AppDialogTitle('Invite code'),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Share this code so others can join "${group.name}":',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: copyCode,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              group.code,
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 2,
+                                  ),
+                            ),
+                          ),
+                          Icon(
+                            justCopied ? Icons.check : Icons.copy_outlined,
+                            color: justCopied
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    justCopied ? 'Copied to clipboard!' : 'Tap the code to copy',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: justCopied
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  AppDialogActions(
+                    secondaryLabel: 'Share',
+                    onSecondary: shareCode,
+                    primaryLabel: 'Close',
+                    onPrimary: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
