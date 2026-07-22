@@ -24,8 +24,11 @@
 
 **Accounts & profile**
 - [x] Add a guest/offline mode — "Continue without an account" on the login page, personal counters stored on-device only (SharedPreferences), no cloud sync; Groups tab shows a sign-in prompt since group tasks are inherently multi-user
-- [ ] Let users set a username instead of showing their full name/email-derived name to other group members
-- [ ] Improve the login flow (revisit UX, consider additional sign-in options)
+- [x] Let users set an optional username at sign-up (stored as the Firebase Auth display name), shown to other group members instead of their full name/email-derived name
+- [x] Confirm password (twice) when creating an account
+- [x] Let users change their password from Settings (current password, then new password twice) — only shown for email/password accounts, not Google sign-in
+- [ ] Add "Forgot password" — send a password reset email link
+- [ ] Improve the login flow further (revisit UX, consider additional sign-in options)
 - [ ] Look into Apple Sign In (likely required by App Store review if Google Sign-In stays as an option)
 
 **Friends & social**
@@ -49,6 +52,7 @@
 - [x] Different colors of badge icons (5-color cycle by chronological order the goal was reached)
 
 **Visuals & platform features**
+- [ ] Add a light/dark mode switch in Settings (app currently follows system theme only — `ThemeMode.system` in `main.dart`)
 - [ ] Investigate icon language/style options — look at swapping from Material Icons to a different consistent icon set (or a specific style variant, e.g. outlined vs. filled) to better match the app's look
 - [ ] Look into localization (support languages beyond English)
 - [ ] Investigate an iOS home screen widget (WidgetKit) for incrementing/decrementing a counter without opening the app

@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../widgets/change_password_dialog.dart';
+
 class SettingsPage extends StatelessWidget {
   final bool isGuest;
   final VoidCallback? onSignIn;
@@ -71,6 +73,9 @@ class SettingsPage extends StatelessWidget {
     final providers = user?.providerData
         .map((info) => _providerLabel(info.providerId))
         .join(', ');
+    final hasPassword =
+        user?.providerData.any((info) => info.providerId == 'password') ??
+        false;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -113,6 +118,12 @@ class SettingsPage extends StatelessWidget {
               providers?.isNotEmpty == true ? providers! : 'Unknown',
             ),
           ),
+          if (hasPassword)
+            ListTile(
+              leading: const Icon(Icons.password_outlined),
+              title: const Text('Change password'),
+              onTap: () => showChangePasswordDialog(context),
+            ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Divider(),
