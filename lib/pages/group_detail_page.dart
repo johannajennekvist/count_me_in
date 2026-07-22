@@ -5,6 +5,7 @@ import '../models/group.dart';
 import '../models/group_member.dart';
 import '../services/group_service.dart';
 import '../widgets/app_dialog.dart';
+import '../widgets/badge_icon.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../widgets/goal_reached_dialog.dart';
 
@@ -302,6 +303,40 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                 ),
                         ),
                       ),
+                    if (target != null) ...[
+                      const SizedBox(height: 24),
+                      Text(
+                        'Badges',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      if (group.badges.isEmpty)
+                        Text(
+                          'Reach your goal to earn a badge!',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        )
+                      else
+                        SizedBox(
+                          height: 100,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: group.badges.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(width: 12),
+                            itemBuilder: (context, index) {
+                              final badges = group.badges.reversed.toList();
+                              final chronologicalIndex =
+                                  group.badges.length - 1 - index;
+                              return _GroupBadgeChip(
+                                badge: badges[index],
+                                colorIndex: chronologicalIndex,
+                              );
+                            },
+                          ),
+                        ),
+                    ],
                   ],
                 );
               },
@@ -309,6 +344,56 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
           ),
         );
       },
+    );
+  }
+}
+
+class _GroupBadgeChip extends StatelessWidget {
+  final GroupBadge badge;
+  final int colorIndex;
+
+  const _GroupBadgeChip({required this.badge, required this.colorIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 64,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              BadgeIcon(value: badge.value, colorIndex: colorIndex),
+              Positioned(
+                left: -6,
+                top: -6,
+                child: Tooltip(
+                  message: badge.gainedByName,
+                  child: CircleAvatar(
+                    radius: 12,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    child: Text(
+                      initialsFor(badge.gainedByName),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            formatBadgeDate(badge.reachedAt),
+            style: Theme.of(context).textTheme.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }

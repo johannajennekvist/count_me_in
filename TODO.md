@@ -38,7 +38,7 @@
 **Achievements / badges**
 - [x] Award a badge when a personal counter's goal is reached (target hit), shown as a horizontal scrollable viewer under Notes, capped at the latest 15
 - [x] Save the date a goal was reached
-- [ ] Award badges for group goals too (currently personal counters only)
+- [x] Award badges for group goals too, shown under the members list, attributed to whichever member's increment crossed the goal (initials shown on the badge)
 - [ ] Look into time-targeted goals and streaks (e.g. daily/weekly goals, consecutive-day streak tracking)
 - [x] Show a celebratory popup when a goal is reached (personal counters and group goals)
 - [x] From that popup, offer an option to raise/update the goal right there instead of needing to go find the edit button

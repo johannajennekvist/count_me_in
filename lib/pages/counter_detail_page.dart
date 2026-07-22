@@ -315,21 +315,6 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
   }
 }
 
-const _monthAbbrev = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
 class _BadgeChip extends StatelessWidget {
   final CounterBadge badge;
   final int colorIndex;
@@ -346,7 +331,7 @@ class _BadgeChip extends StatelessWidget {
           BadgeIcon(value: badge.value, colorIndex: colorIndex),
           const SizedBox(height: 8),
           Text(
-            '${_monthAbbrev[badge.reachedAt.month - 1]} ${badge.reachedAt.day}',
+            formatBadgeDate(badge.reachedAt),
             style: Theme.of(context).textTheme.bodySmall,
             textAlign: TextAlign.center,
           ),

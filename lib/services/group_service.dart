@@ -140,8 +140,55 @@ class GroupService {
   }
 
   Future<void> incrementMyTally(String groupId, int amount) async {
-    await _groups.doc(groupId).collection('members').doc(_uid).update({
+    final groupRef = _groups.doc(groupId);
+    await groupRef.collection('members').doc(_uid).update({
       'tally': FieldValue.increment(amount),
+    });
+    await _maybeAwardGroupBadge(groupRef);
+  }
+
+  /// Awards a badge for the group's current target if the combined tally
+  /// has reached it and no badge has been awarded for that target yet.
+  /// Runs as a transaction so concurrent increments from different members
+  /// can't award duplicate badges for the same target.
+  Future<void> _maybeAwardGroupBadge(
+    DocumentReference<Map<String, dynamic>> groupRef,
+  ) async {
+    await _firestore.runTransaction((transaction) async {
+      final groupSnapshot = await transaction.get(groupRef);
+      final groupData = groupSnapshot.data();
+      if (groupData == null) return;
+      final group = Group.fromFirestore(groupSnapshot.id, groupData);
+
+      final target = group.target;
+      if (target == null || target <= 0) return;
+      if (group.badges.any((b) => b.value == target)) return;
+
+      var total = 0;
+      for (final uid in group.memberIds) {
+        final memberSnapshot = await transaction.get(
+          groupRef.collection('members').doc(uid),
+        );
+        total += (memberSnapshot.data()?['tally'] as int?) ?? 0;
+      }
+      if (total < target) return;
+
+      var updatedBadges = [
+        ...group.badges,
+        GroupBadge(
+          value: target,
+          reachedAt: DateTime.now(),
+          gainedByName: _displayName,
+        ),
+      ];
+      if (updatedBadges.length > maxGroupBadges) {
+        updatedBadges = updatedBadges.sublist(
+          updatedBadges.length - maxGroupBadges,
+        );
+      }
+      transaction.update(groupRef, {
+        'badges': updatedBadges.map((b) => b.toFirestore()).toList(),
+      });
     });
   }
 
