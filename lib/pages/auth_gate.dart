@@ -4,11 +4,25 @@ import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'main_shell.dart';
 
-class AuthGate extends StatelessWidget {
+class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
   @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  bool _isGuest = false;
+
+  @override
   Widget build(BuildContext context) {
+    if (_isGuest) {
+      return MainShell(
+        isGuest: true,
+        onSignIn: () => setState(() => _isGuest = false),
+      );
+    }
+
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
@@ -20,7 +34,9 @@ class AuthGate extends StatelessWidget {
         if (snapshot.hasData) {
           return const MainShell();
         }
-        return const LoginPage();
+        return LoginPage(
+          onContinueAsGuest: () => setState(() => _isGuest = true),
+        );
       },
     );
   }

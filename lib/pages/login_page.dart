@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final VoidCallback onContinueAsGuest;
+
+  const LoginPage({super.key, required this.onContinueAsGuest});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -167,6 +169,31 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: _isSubmitting ? null : _signInWithGoogle,
                     icon: const Icon(Icons.g_mobiledata),
                     label: const Text('Continue with Google'),
+                  ),
+                  const SizedBox(height: 24),
+                  const Row(
+                    children: [
+                      Expanded(child: Divider()),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text('or'),
+                      ),
+                      Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton(
+                    onPressed: _isSubmitting ? null : widget.onContinueAsGuest,
+                    child: const Text('Continue without an account'),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Your counters will be stored only on this device — they "
+                    "won't sync, back up, or support group goals.",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),

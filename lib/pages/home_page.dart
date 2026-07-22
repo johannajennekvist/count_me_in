@@ -9,14 +9,16 @@ import '../widgets/goal_reached_dialog.dart';
 import 'counter_detail_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final CounterStorage storage;
+
+  const HomePage({super.key, required this.storage});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final _storage = CounterStorage();
+  late final CounterStorage _storage = widget.storage;
   final Map<String, TextEditingController> _stepControllers = {};
   List<Counter> _counters = [];
   bool _loading = true;

@@ -10,6 +10,7 @@
 - [x] Set up the Firebase project and configure it in the app
 - [x] Add sign-up/login (email+password and Google Sign-In)
 - [x] Migrate counter storage from local-only to Firestore
+- [ ] Configure Firebase for the web platform — `firebase_options.dart` only has android/ios/macos (never ran `flutterfire configure` for web), so `flutter run -d chrome` throws immediately on `Firebase.initializeApp()` and can't be used for browser-based testing/dev right now
 
 **Group tasks**
 - [x] Design the data model (group, members, each member's personal tally, group total)
@@ -22,8 +23,10 @@
 - [ ] Send a notification to all other group members when the group's goal is reached (currently the celebration popup only shows to whoever has the group screen open at that moment)
 
 **Accounts & profile**
+- [x] Add a guest/offline mode — "Continue without an account" on the login page, personal counters stored on-device only (SharedPreferences), no cloud sync; Groups tab shows a sign-in prompt since group tasks are inherently multi-user
 - [ ] Let users set a username instead of showing their full name/email-derived name to other group members
 - [ ] Improve the login flow (revisit UX, consider additional sign-in options)
+- [ ] Look into Apple Sign In (likely required by App Store review if Google Sign-In stays as an option)
 
 **Friends & social**
 - [ ] Look into a friends system — add/accept friends
@@ -47,6 +50,7 @@
 
 **Visuals & platform features**
 - [ ] Investigate icon language/style options — look at swapping from Material Icons to a different consistent icon set (or a specific style variant, e.g. outlined vs. filled) to better match the app's look
+- [ ] Look into localization (support languages beyond English)
 - [ ] Investigate an iOS home screen widget (WidgetKit) for incrementing/decrementing a counter without opening the app
 
 **Distribution**
