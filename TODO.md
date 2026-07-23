@@ -5,7 +5,7 @@
 *Hard blockers*
 - [ ] Change the bundle ID from the placeholder (`com.example.countMeIn` iOS / `com.example.count_me_in` Android) to a real identifier tied to your Apple Developer account
 - [x] Add in-app account deletion — Apple guideline 5.1.1(v) requires it since the app supports account creation; Settings currently only has Sign out
-- [ ] Look into Apple Sign In (likely required by App Store review since Google Sign-In is offered as a login option)
+- [ ] Finish Apple Sign In setup — Dart side is implemented (`login_page.dart`, gated to iOS/macOS) and won't affect Android/current testing, but it can't actually work until you: enroll in the Apple Developer Program (needed even to add the Xcode capability, not just to ship), add the "Sign in with Apple" capability in Xcode's Signing & Capabilities tab, and enable the Apple provider in the Firebase Console (Authentication → Sign-in method)
 - [ ] Enroll in the Apple Developer Program ($99/yr) when ready to share beyond your own device
 - [ ] Set up App Store Connect record and app icon
 - [ ] Write a privacy policy (required even for simple apps, more so once accounts/backend exist)

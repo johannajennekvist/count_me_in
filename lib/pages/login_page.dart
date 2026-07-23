@@ -1,8 +1,32 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../widgets/tally_icon.dart';
+
+/// Whether to offer "Sign in with Apple" — only relevant on Apple platforms
+/// (and the entitlement is only configured for iOS/macOS builds).
+bool get _supportsAppleSignIn =>
+    !kIsWeb && (Platform.isIOS || Platform.isMacOS);
+
+/// A cryptographically random string used as the Apple sign-in nonce, per
+/// Firebase's recommended flow to prevent replay attacks.
+String _generateNonce([int length = 32]) {
+  const charset =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+  final random = Random.secure();
+  return List.generate(
+    length,
+    (_) => charset[random.nextInt(charset.length)],
+  ).join();
+}
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onContinueAsGuest;
@@ -99,6 +123,61 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _signInWithApple() async {
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final rawNonce = _generateNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+
+      final oauthCredential = OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        rawNonce: rawNonce,
+      );
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        oauthCredential,
+      );
+
+      // Apple only returns the user's name on the very first sign-in; save
+      // it as the display name since Firebase won't have captured it.
+      final givenName = appleCredential.givenName;
+      final familyName = appleCredential.familyName;
+      if (userCredential.user?.displayName == null &&
+          (givenName != null || familyName != null)) {
+        final name = [
+          givenName,
+          familyName,
+        ].where((part) => part != null && part.isNotEmpty).join(' ');
+        if (name.isNotEmpty) {
+          await userCredential.user?.updateDisplayName(name);
+        }
+      }
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code != AuthorizationErrorCode.canceled) {
+        setState(() => _errorMessage = 'Apple sign-in failed. Try again.');
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() => _errorMessage = e.message ?? 'Something went wrong.');
+    } catch (_) {
+      setState(
+        () => _errorMessage = 'Apple sign-in isn\'t available on this device.',
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -172,6 +251,14 @@ class _LoginPageState extends State<LoginPage> {
           icon: const Icon(Icons.email_outlined),
           label: const Text('Continue with Email'),
         ),
+        if (_supportsAppleSignIn) ...[
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: _isSubmitting ? null : _signInWithApple,
+            icon: const Icon(Icons.apple),
+            label: const Text('Continue with Apple'),
+          ),
+        ],
         const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: _isSubmitting ? null : _signInWithGoogle,
