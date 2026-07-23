@@ -200,6 +200,18 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                       keyboardType: TextInputType.number,
                       onChanged: (_) => setDialogState(() {}),
                     ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _showGroupMembersDialog(group);
+                      },
+                      icon: const Icon(Icons.group_outlined),
+                      label: const Text('Group Members'),
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   AppDialogActions(
                     secondaryLabel: 'Cancel',
@@ -211,6 +223,73 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  Future<void> _showGroupMembersDialog(Group group) async {
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AppDialog(
+          child: StreamBuilder<List<GroupMember>>(
+            stream: _groupService.streamMembers(group.id),
+            builder: (context, snapshot) {
+              final members = snapshot.data ?? const <GroupMember>[];
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AppDialogTitle('Group members'),
+                  const SizedBox(height: 16),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 320),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          for (final member in members)
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(
+                                member.displayName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text('${member.tally}'),
+                              trailing: member.uid == myUid
+                                  ? null
+                                  : IconButton(
+                                      icon: Icon(
+                                        Icons.person_remove_outlined,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.error,
+                                      ),
+                                      tooltip: 'Remove member',
+                                      onPressed: () =>
+                                          _confirmRemoveMember(group, member),
+                                    ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Close'),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         );
       },
     );
@@ -368,21 +447,6 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                         .headlineSmall
                                         ?.copyWith(fontWeight: FontWeight.w600),
                                   ),
-                                  if (members[i].uid != myUid &&
-                                      group.createdBy == myUid)
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.person_remove_outlined,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.error,
-                                      ),
-                                      tooltip: 'Remove member',
-                                      onPressed: () => _confirmRemoveMember(
-                                        group,
-                                        members[i],
-                                      ),
-                                    ),
                                 ],
                               ),
                               if (members[i].uid == myUid) ...[
