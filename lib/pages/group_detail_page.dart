@@ -137,109 +137,15 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
   }
 
   Future<void> _showEditGroupDialog(Group group, int currentTotal) async {
-    final nameController = TextEditingController(text: group.name);
-    final targetController = TextEditingController(
-      text: group.target?.toString() ?? '',
-    );
-    bool hasTarget = group.target != null;
-    bool isSubmitting = false;
-
     await showDialog<void>(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final target = int.tryParse(targetController.text);
-            final isTargetValid =
-                !hasTarget ||
-                (target != null &&
-                    target > currentTotal &&
-                    target <= maxCounterInput);
-            final isNameValid = nameController.text.trim().isNotEmpty;
-
-            Future<void> submit() async {
-              if (isSubmitting) return;
-
-              final name = nameController.text.trim();
-              if (name.isEmpty) return;
-
-              setDialogState(() => isSubmitting = true);
-
-              await _groupService.updateGroup(
-                group.id,
-                name: name,
-                target: hasTarget ? target : null,
-              );
-              if (context.mounted) Navigator.of(context).pop();
-            }
-
-            return AppDialog(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AppDialogTitle('Edit group'),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Name'),
-                    autofocus: true,
-                    onChanged: (_) => setDialogState(() {}),
-                  ),
-                  CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    secondary: const Icon(Icons.flag_outlined),
-                    title: const Text('Add goal?'),
-                    value: hasTarget,
-                    onChanged: (value) {
-                      setDialogState(() => hasTarget = value ?? false);
-                    },
-                  ),
-                  if (hasTarget)
-                    TextField(
-                      controller: targetController,
-                      decoration: InputDecoration(
-                        labelText: 'Target count',
-                        hintText: 'e.g. ${nextTenAbove(currentTotal)}',
-                        helperText:
-                            'Must be between ${currentTotal + 1} and $maxCounterInput',
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(
-                          maxCounterInput.toString().length,
-                        ),
-                      ],
-                      onChanged: (_) => setDialogState(() {}),
-                    ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        _showGroupMembersDialog(group);
-                      },
-                      icon: const Icon(Icons.group_outlined),
-                      label: const Text('Group Members'),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  AppDialogActions(
-                    secondaryLabel: 'Cancel',
-                    onSecondary: () => Navigator.of(context).pop(),
-                    primaryLabel: 'Save',
-                    onPrimary: (isTargetValid && isNameValid && !isSubmitting)
-                        ? submit
-                        : null,
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+      builder: (context) => _EditGroupDialog(
+        group: group,
+        currentTotal: currentTotal,
+        onSave: (name, target) =>
+            _groupService.updateGroup(group.id, name: name, target: target),
+        onShowMembers: () => _showGroupMembersDialog(group),
+      ),
     );
   }
 
@@ -588,6 +494,130 @@ class _GroupBadgeChip extends StatelessWidget {
             formatBadgeDate(badge.reachedAt),
             style: Theme.of(context).textTheme.bodySmall,
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EditGroupDialog extends StatefulWidget {
+  final Group group;
+  final int currentTotal;
+  final Future<void> Function(String name, int? target) onSave;
+  final VoidCallback onShowMembers;
+
+  const _EditGroupDialog({
+    required this.group,
+    required this.currentTotal,
+    required this.onSave,
+    required this.onShowMembers,
+  });
+
+  @override
+  State<_EditGroupDialog> createState() => _EditGroupDialogState();
+}
+
+class _EditGroupDialogState extends State<_EditGroupDialog> {
+  late final _nameController = TextEditingController(text: widget.group.name);
+  late final _targetController = TextEditingController(
+    text: widget.group.target?.toString() ?? '',
+  );
+  late bool _hasTarget = widget.group.target != null;
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _targetController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_isSubmitting) return;
+
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+
+    setState(() => _isSubmitting = true);
+
+    final target = int.tryParse(_targetController.text);
+    await widget.onSave(name, _hasTarget ? target : null);
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final target = int.tryParse(_targetController.text);
+    final isTargetValid =
+        !_hasTarget ||
+        (target != null &&
+            target > widget.currentTotal &&
+            target <= maxCounterInput);
+    final isNameValid = _nameController.text.trim().isNotEmpty;
+
+    return AppDialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AppDialogTitle('Edit group'),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(labelText: 'Name'),
+            autofocus: true,
+            onChanged: (_) => setState(() {}),
+          ),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            secondary: const Icon(Icons.flag_outlined),
+            title: const Text('Add goal?'),
+            value: _hasTarget,
+            onChanged: (value) {
+              setState(() => _hasTarget = value ?? false);
+            },
+          ),
+          if (_hasTarget)
+            TextField(
+              controller: _targetController,
+              decoration: InputDecoration(
+                labelText: 'Target count',
+                hintText: 'e.g. ${nextTenAbove(widget.currentTotal)}',
+                helperText:
+                    'Must be between ${widget.currentTotal + 1} and $maxCounterInput',
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(
+                  maxCounterInput.toString().length,
+                ),
+              ],
+              onChanged: (_) => setState(() {}),
+            ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                widget.onShowMembers();
+              },
+              icon: const Icon(Icons.group_outlined),
+              label: const Text('Group Members'),
+            ),
+          ),
+          const SizedBox(height: 24),
+          AppDialogActions(
+            secondaryLabel: 'Cancel',
+            onSecondary: _isSubmitting
+                ? null
+                : () => Navigator.of(context).pop(),
+            primaryLabel: 'Save',
+            onPrimary: (isTargetValid && isNameValid && !_isSubmitting)
+                ? _submit
+                : null,
           ),
         ],
       ),

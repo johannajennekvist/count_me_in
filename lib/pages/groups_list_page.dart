@@ -20,85 +20,9 @@ class _GroupsListPageState extends State<GroupsListPage> {
   final _groupService = GroupService();
 
   Future<void> _showCreateGroupDialog() async {
-    final nameController = TextEditingController();
-    final targetController = TextEditingController();
-    bool hasTarget = false;
-    const currentTotal = 0;
-
     await showDialog<void>(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final target = int.tryParse(targetController.text);
-            final isTargetValid =
-                !hasTarget ||
-                (target != null &&
-                    target > currentTotal &&
-                    target <= maxCounterInput);
-            final isNameValid = nameController.text.trim().isNotEmpty;
-
-            return AppDialog(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AppDialogTitle('Create a group'),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Name'),
-                    autofocus: true,
-                    onChanged: (_) => setDialogState(() {}),
-                  ),
-                  CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    secondary: const Icon(Icons.flag_outlined),
-                    title: const Text('Add goal?'),
-                    value: hasTarget,
-                    onChanged: (value) {
-                      setDialogState(() => hasTarget = value ?? false);
-                    },
-                  ),
-                  if (hasTarget)
-                    TextField(
-                      controller: targetController,
-                      decoration: InputDecoration(
-                        labelText: 'Target count',
-                        hintText: 'e.g. ${nextTenAbove(currentTotal)}',
-                        helperText:
-                            'Must be between ${currentTotal + 1} and $maxCounterInput',
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(
-                          maxCounterInput.toString().length,
-                        ),
-                      ],
-                      onChanged: (_) => setDialogState(() {}),
-                    ),
-                  const SizedBox(height: 24),
-                  AppDialogActions(
-                    secondaryLabel: 'Cancel',
-                    onSecondary: () => Navigator.of(context).pop(),
-                    primaryLabel: 'Create',
-                    onPrimary: (isTargetValid && isNameValid)
-                        ? () {
-                            final name = nameController.text.trim();
-                            if (name.isEmpty) return;
-
-                            Navigator.of(context).pop();
-                            _createGroup(name, hasTarget ? target : null);
-                          }
-                        : null,
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+      builder: (context) => _CreateGroupDialog(onCreate: _createGroup),
     );
   }
 
@@ -126,41 +50,9 @@ class _GroupsListPageState extends State<GroupsListPage> {
   }
 
   Future<void> _showJoinGroupDialog() async {
-    final codeController = TextEditingController();
-
     await showDialog<void>(
       context: context,
-      builder: (context) {
-        return AppDialog(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const AppDialogTitle('Join a group'),
-              const SizedBox(height: 16),
-              TextField(
-                controller: codeController,
-                decoration: const InputDecoration(labelText: 'Code'),
-                textCapitalization: TextCapitalization.characters,
-                autofocus: true,
-              ),
-              const SizedBox(height: 24),
-              AppDialogActions(
-                secondaryLabel: 'Cancel',
-                onSecondary: () => Navigator.of(context).pop(),
-                primaryLabel: 'Join',
-                onPrimary: () {
-                  final code = codeController.text.trim();
-                  if (code.isEmpty) return;
-
-                  Navigator.of(context).pop();
-                  _joinGroup(code);
-                },
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (context) => _JoinGroupDialog(onJoin: _joinGroup),
     );
   }
 
@@ -285,6 +177,151 @@ class _GroupsListPageState extends State<GroupsListPage> {
         onPressed: _showAddOptions,
         tooltip: 'Add group',
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class _CreateGroupDialog extends StatefulWidget {
+  final void Function(String name, int? target) onCreate;
+
+  const _CreateGroupDialog({required this.onCreate});
+
+  @override
+  State<_CreateGroupDialog> createState() => _CreateGroupDialogState();
+}
+
+class _CreateGroupDialogState extends State<_CreateGroupDialog> {
+  final _nameController = TextEditingController();
+  final _targetController = TextEditingController();
+  bool _hasTarget = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _targetController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const currentTotal = 0;
+    final target = int.tryParse(_targetController.text);
+    final isTargetValid =
+        !_hasTarget ||
+        (target != null &&
+            target > currentTotal &&
+            target <= maxCounterInput);
+    final isNameValid = _nameController.text.trim().isNotEmpty;
+
+    return AppDialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AppDialogTitle('Create a group'),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(labelText: 'Name'),
+            autofocus: true,
+            onChanged: (_) => setState(() {}),
+          ),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            secondary: const Icon(Icons.flag_outlined),
+            title: const Text('Add goal?'),
+            value: _hasTarget,
+            onChanged: (value) {
+              setState(() => _hasTarget = value ?? false);
+            },
+          ),
+          if (_hasTarget)
+            TextField(
+              controller: _targetController,
+              decoration: InputDecoration(
+                labelText: 'Target count',
+                hintText: 'e.g. ${nextTenAbove(currentTotal)}',
+                helperText:
+                    'Must be between ${currentTotal + 1} and $maxCounterInput',
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(
+                  maxCounterInput.toString().length,
+                ),
+              ],
+              onChanged: (_) => setState(() {}),
+            ),
+          const SizedBox(height: 24),
+          AppDialogActions(
+            secondaryLabel: 'Cancel',
+            onSecondary: () => Navigator.of(context).pop(),
+            primaryLabel: 'Create',
+            onPrimary: (isTargetValid && isNameValid)
+                ? () {
+                    final name = _nameController.text.trim();
+                    if (name.isEmpty) return;
+
+                    Navigator.of(context).pop();
+                    widget.onCreate(name, _hasTarget ? target : null);
+                  }
+                : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _JoinGroupDialog extends StatefulWidget {
+  final void Function(String code) onJoin;
+
+  const _JoinGroupDialog({required this.onJoin});
+
+  @override
+  State<_JoinGroupDialog> createState() => _JoinGroupDialogState();
+}
+
+class _JoinGroupDialogState extends State<_JoinGroupDialog> {
+  final _codeController = TextEditingController();
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppDialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AppDialogTitle('Join a group'),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _codeController,
+            decoration: const InputDecoration(labelText: 'Code'),
+            textCapitalization: TextCapitalization.characters,
+            autofocus: true,
+          ),
+          const SizedBox(height: 24),
+          AppDialogActions(
+            secondaryLabel: 'Cancel',
+            onSecondary: () => Navigator.of(context).pop(),
+            primaryLabel: 'Join',
+            onPrimary: () {
+              final code = _codeController.text.trim();
+              if (code.isEmpty) return;
+
+              Navigator.of(context).pop();
+              widget.onJoin(code);
+            },
+          ),
+        ],
       ),
     );
   }

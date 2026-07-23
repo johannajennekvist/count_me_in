@@ -140,6 +140,20 @@ class GroupService {
     await batch.commit();
   }
 
+  /// Removes the current user from the group. Unlike [removeMember], any
+  /// member can do this for themselves (enforced by Firestore security
+  /// rules), including the creator — the group and its other members are
+  /// left intact, just without an active admin.
+  Future<void> leaveGroup(String groupId) async {
+    final groupRef = _groups.doc(groupId);
+    final batch = _firestore.batch();
+    batch.update(groupRef, {
+      'memberIds': FieldValue.arrayRemove([_uid]),
+    });
+    batch.delete(groupRef.collection('members').doc(_uid));
+    await batch.commit();
+  }
+
   Future<void> deleteGroup(String groupId) async {
     final groupRef = _groups.doc(groupId);
     final membersSnapshot = await groupRef.collection('members').get();

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../services/theme_controller.dart';
 import '../widgets/change_password_dialog.dart';
+import '../widgets/confirm_delete_dialog.dart';
+import '../widgets/delete_account_dialog.dart';
 
 class SettingsPage extends StatelessWidget {
   final bool isGuest;
@@ -199,7 +201,24 @@ class SettingsPage extends StatelessWidget {
               'Sign out',
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
-            onTap: () => FirebaseAuth.instance.signOut(),
+            onTap: () => showConfirmDeleteDialog(
+              context,
+              title: 'Sign out',
+              message: 'Are you sure you want to sign out?',
+              confirmLabel: 'Sign out',
+              onConfirm: () => FirebaseAuth.instance.signOut(),
+            ),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.delete_forever_outlined,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            title: Text(
+              'Delete account',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+            onTap: () => showDeleteAccountDialog(context),
           ),
         ],
       ),

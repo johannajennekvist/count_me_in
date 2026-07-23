@@ -11,16 +11,22 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.createdBy;
       // Anyone signed in can join (adds only their own uid to memberIds).
-      // Only the creator can edit the group's name/target, or remove a
-      // member (memberIds shrinks, nobody added). Any current member can
-      // award a badge (badges-only change) when their increment crosses
-      // the group's goal.
+      // Any current member can leave on their own (memberIds shrinks by
+      // exactly their own uid) — used for account deletion too. Only the
+      // creator can remove OTHER members, or edit the group's name/target.
+      // Any current member can award a badge (badges-only change) when
+      // their increment crosses the group's goal.
       allow update: if request.auth != null
         && (
           (
             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds'])
             && request.resource.data.memberIds.removeAll([request.auth.uid])
               == resource.data.memberIds
+          )
+          || (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds'])
+            && resource.data.memberIds.removeAll([request.auth.uid])
+              == request.resource.data.memberIds
           )
           || (
             request.auth.uid == resource.data.createdBy
