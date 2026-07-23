@@ -83,6 +83,7 @@
 - [ ] Investigate icon language/style options — look at swapping from Material Icons to a different consistent icon set (or a specific style variant, e.g. outlined vs. filled) to better match the app's look
 - [ ] Look into localization (support languages beyond English)
 - [ ] Investigate an iOS home screen widget (WidgetKit) for incrementing/decrementing a counter without opening the app
+- [ ] Try moving the top-right AppBar action icons (share/delete/edit, etc.) down to the bottom of the screen to streamline navigation
 
 **Monetization (later, once group features exist)**
 - [ ] Decide free-tier limits (e.g. capped number of personal counters)
