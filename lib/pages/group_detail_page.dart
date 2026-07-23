@@ -141,6 +141,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
       text: group.target?.toString() ?? '',
     );
     bool hasTarget = group.target != null;
+    bool isSubmitting = false;
 
     await showDialog<void>(
       context: context,
@@ -150,6 +151,22 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
             final target = int.tryParse(targetController.text);
             final isTargetValid =
                 !hasTarget || (target != null && target > currentTotal);
+
+            Future<void> submit() async {
+              if (isSubmitting) return;
+
+              final name = nameController.text.trim();
+              if (name.isEmpty) return;
+
+              setDialogState(() => isSubmitting = true);
+
+              await _groupService.updateGroup(
+                group.id,
+                name: name,
+                target: hasTarget ? target : null,
+              );
+              if (context.mounted) Navigator.of(context).pop();
+            }
 
             return AppDialog(
               child: Column(
@@ -187,19 +204,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                     secondaryLabel: 'Cancel',
                     onSecondary: () => Navigator.of(context).pop(),
                     primaryLabel: 'Save',
-                    onPrimary: isTargetValid
-                        ? () async {
-                            final name = nameController.text.trim();
-                            if (name.isEmpty) return;
-
-                            await _groupService.updateGroup(
-                              group.id,
-                              name: name,
-                              target: hasTarget ? target : null,
-                            );
-                            if (context.mounted) Navigator.of(context).pop();
-                          }
-                        : null,
+                    onPrimary: (isTargetValid && !isSubmitting) ? submit : null,
                   ),
                 ],
               ),
