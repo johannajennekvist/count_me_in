@@ -47,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isRegistering = false;
   bool _isSubmitting = false;
   String? _errorMessage;
+  String? _infoMessage;
 
   @override
   void dispose() {
@@ -61,6 +62,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _showEmailForm = false;
       _errorMessage = null;
+      _infoMessage = null;
     });
   }
 
@@ -70,6 +72,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
+      _infoMessage = null;
     });
 
     try {
@@ -97,10 +100,38 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _sendPasswordReset() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() {
+        _infoMessage = null;
+        _errorMessage = 'Enter your email above, then tap "Forgot password?"';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+      _infoMessage = null;
+    });
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (!mounted) return;
+      setState(() => _infoMessage = 'Password reset email sent to $email.');
+    } on FirebaseAuthException catch (e) {
+      setState(() => _errorMessage = e.message ?? 'Something went wrong.');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
   Future<void> _signInWithGoogle() async {
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
+      _infoMessage = null;
     });
 
     try {
@@ -127,6 +158,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
+      _infoMessage = null;
     });
 
     try {
@@ -364,6 +396,13 @@ class _LoginPageState extends State<LoginPage> {
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ],
+          if (_infoMessage != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              _infoMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
+          ],
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _isSubmitting ? null : _submit,
@@ -382,6 +421,7 @@ class _LoginPageState extends State<LoginPage> {
                 : () => setState(() {
                     _isRegistering = !_isRegistering;
                     _errorMessage = null;
+                    _infoMessage = null;
                   }),
             child: Text(
               _isRegistering
@@ -389,6 +429,11 @@ class _LoginPageState extends State<LoginPage> {
                   : 'Need an account? Create one',
             ),
           ),
+          if (!_isRegistering)
+            TextButton(
+              onPressed: _isSubmitting ? null : _sendPasswordReset,
+              child: const Text('Forgot password?'),
+            ),
         ],
       ),
     );
