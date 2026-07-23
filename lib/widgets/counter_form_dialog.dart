@@ -39,7 +39,8 @@ Future<void> showCounterFormDialog(
                 ),
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Counter has goal?'),
+                  secondary: const Icon(Icons.flag_outlined),
+                  title: const Text('Add goal?'),
                   value: hasTarget,
                   onChanged: (value) {
                     setDialogState(() => hasTarget = value ?? false);

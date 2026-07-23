@@ -182,7 +182,8 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Group has goal?'),
+                    secondary: const Icon(Icons.flag_outlined),
+                    title: const Text('Add goal?'),
                     value: hasTarget,
                     onChanged: (value) {
                       setDialogState(() => hasTarget = value ?? false);
