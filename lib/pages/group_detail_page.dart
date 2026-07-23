@@ -335,12 +335,54 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                     const SizedBox(height: 16),
                     for (var i = 0; i < members.length; i++)
                       Card(
-                        child: ListTile(
-                          leading: CircleAvatar(child: Text('${i + 1}')),
-                          title: Text(members[i].displayName),
-                          trailing: members[i].uid == myUid
-                              ? Row(
-                                  mainAxisSize: MainAxisSize.min,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(child: Text('${i + 1}')),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      members[i].displayName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${members[i].tally}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  if (members[i].uid != myUid &&
+                                      group.createdBy == myUid)
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.person_remove_outlined,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.error,
+                                      ),
+                                      tooltip: 'Remove member',
+                                      onPressed: () => _confirmRemoveMember(
+                                        group,
+                                        members[i],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              if (members[i].uid == myUid) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     IconButton(
                                       icon: const Icon(
@@ -370,46 +412,11 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                       onPressed: () => _groupService
                                           .incrementMyTally(group.id, _step),
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '${members[i].tally}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                  ],
-                                )
-                              : Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '${members[i].tally}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                    if (group.createdBy == myUid)
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.person_remove_outlined,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.error,
-                                        ),
-                                        tooltip: 'Remove member',
-                                        onPressed: () => _confirmRemoveMember(
-                                          group,
-                                          members[i],
-                                        ),
-                                      ),
                                   ],
                                 ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     const SizedBox(height: 24),
