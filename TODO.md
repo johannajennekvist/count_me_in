@@ -59,7 +59,7 @@
 - [x] Different colors of badge icons (5-color cycle by chronological order the goal was reached)
 
 **Visuals & platform features**
-- [ ] Add a light/dark mode switch in Settings (app currently follows system theme only — `ThemeMode.system` in `main.dart`)
+- [x] Add a light/dark mode switch in Settings (app currently follows system theme only — `ThemeMode.system` in `main.dart`)
 - [ ] Investigate icon language/style options — look at swapping from Material Icons to a different consistent icon set (or a specific style variant, e.g. outlined vs. filled) to better match the app's look
 - [ ] Look into localization (support languages beyond English)
 - [ ] Investigate an iOS home screen widget (WidgetKit) for incrementing/decrementing a counter without opening the app

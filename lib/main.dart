@@ -5,12 +5,14 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import 'firebase_options.dart';
 import 'pages/auth_gate.dart';
+import 'services/theme_controller.dart';
 
 const _seedColor = Color(0xFF1B5E20);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await themeController.load();
   try {
     await GoogleSignIn.instance.initialize();
   } catch (_) {
@@ -25,12 +27,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Count Me In',
-      theme: _buildTheme(Brightness.light),
-      darkTheme: _buildTheme(Brightness.dark),
-      themeMode: ThemeMode.system,
-      home: const AuthGate(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeController,
+      builder: (context, themeMode, _) {
+        return MaterialApp(
+          title: 'Count Me In',
+          theme: _buildTheme(Brightness.light),
+          darkTheme: _buildTheme(Brightness.dark),
+          themeMode: themeMode,
+          home: const AuthGate(),
+        );
+      },
     );
   }
 }
