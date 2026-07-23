@@ -73,8 +73,12 @@ class _HomePageState extends State<HomePage> {
     int amount, {
     bool celebrate = true,
   }) async {
-    final updated = counter.incremented(amount);
-    final newlyEarnedBadge = updated.badges.length > counter.badges.length
+    final current = _counters.firstWhere(
+      (c) => c.id == counter.id,
+      orElse: () => counter,
+    );
+    final updated = current.incremented(amount);
+    final newlyEarnedBadge = updated.badges.length > current.badges.length
         ? updated.badges.last
         : null;
 
