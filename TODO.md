@@ -1,5 +1,27 @@
 # Count Me In — TODO
 
+**Shippable checklist (App Store readiness)**
+
+*Hard blockers*
+- [ ] Change the bundle ID from the placeholder (`com.example.countMeIn` iOS / `com.example.count_me_in` Android) to a real identifier tied to your Apple Developer account
+- [x] Add in-app account deletion — Apple guideline 5.1.1(v) requires it since the app supports account creation; Settings currently only has Sign out
+- [ ] Look into Apple Sign In (likely required by App Store review since Google Sign-In is offered as a login option)
+- [ ] Enroll in the Apple Developer Program ($99/yr) when ready to share beyond your own device
+- [ ] Set up App Store Connect record and app icon
+- [ ] Write a privacy policy (required even for simple apps, more so once accounts/backend exist)
+- [ ] Run a TestFlight beta with a few real users (friends/family group is a natural first test)
+- [ ] Submit for App Store review
+
+*Worth fixing before real users touch it*
+- [ ] Tighten Firestore rules — a member can currently write any value (including negative) directly to their own `tally` field with no server-side bound, bypassing the app's client-side clamping
+- [ ] Add crash/error reporting (e.g. Firebase Crashlytics) — no visibility into real-user crashes right now
+- [ ] Add "Forgot password" — send a password reset email link
+- [ ] Make invite codes actually unique — `_generateCode()` picks 6 random chars with no collision check against Firestore
+- [ ] Expand automated test coverage beyond the default counter smoke test in `test/widget_test.dart`
+
+*Cosmetic*
+- [ ] Update `pubspec.yaml` description from the default `"A new Flutter project."`
+
 **Personal goals (polish current MVP)**
 - [x] Fix keyboard not dismissing when tapping outside the step field
 - [x] Fix delete confirmation dialog text overflow
@@ -23,17 +45,15 @@
 - [x] Move member removal into the "Edit group" menu instead of a remove icon sitting on every member row — cleaner member list, removal action grouped with the other admin-only actions
 - [x] Add copy-to-clipboard on the invite code popup, with visual feedback that it was copied
 - [x] Add a "Share" button on the invite code popup using the native share sheet (`share_plus`), sharing the code as plain text
-- [ ] Upgrade invite sharing to a tappable deep link that opens the app straight to "join this group" (skips manually typing the code). Needs Universal Links (iOS) / App Links (Android): a domain to host `apple-app-site-association` / `assetlinks.json` over HTTPS, Associated Domains + intent filter config in the native projects, and an `app_links`-based listener in Flutter to catch the incoming URL and route to the join flow. Bigger lift than the plain-text share — worth doing once there's real distribution (ties into the Distribution section below)
-- [ ] Make invite codes actually unique — `_generateCode()` currently just picks 6 random chars with no check against existing codes in Firestore, so a collision (two groups sharing a code) is possible, just unlikely at small scale
+- [ ] Upgrade invite sharing to a tappable deep link that opens the app straight to "join this group" (skips manually typing the code). Needs Universal Links (iOS) / App Links (Android): a domain to host `apple-app-site-association` / `assetlinks.json` over HTTPS, Associated Domains + intent filter config in the native projects, and an `app_links`-based listener in Flutter to catch the incoming URL and route to the join flow. Bigger lift than the plain-text share — worth doing once there's real distribution (ties into the Shippable checklist above)
+- [ ] Let a user leave a group counter themselves (regular members) or delete it (if they're the admin) — `GroupService.leaveGroup`/`deleteGroup` already exist (added for account deletion / the app bar delete icon) but there's no self-serve "leave" button in the UI for a non-admin member who just wants out
 
 **Accounts & profile**
 - [x] Add a guest/offline mode — "Continue without an account" on the login page, personal counters stored on-device only (SharedPreferences), no cloud sync; Groups tab shows a sign-in prompt since group tasks are inherently multi-user
 - [x] Let users set an optional username at sign-up (stored as the Firebase Auth display name), shown to other group members instead of their full name/email-derived name
 - [x] Confirm password (twice) when creating an account
 - [x] Let users change their password from Settings (current password, then new password twice) — only shown for email/password accounts, not Google sign-in
-- [ ] Add "Forgot password" — send a password reset email link
 - [ ] Improve the login flow further (revisit UX, consider additional sign-in options)
-- [ ] Look into Apple Sign In (likely required by App Store review if Google Sign-In stays as an option)
 
 **Friends & social**
 - [ ] Look into a friends system — add/accept friends
@@ -63,13 +83,6 @@
 - [ ] Investigate icon language/style options — look at swapping from Material Icons to a different consistent icon set (or a specific style variant, e.g. outlined vs. filled) to better match the app's look
 - [ ] Look into localization (support languages beyond English)
 - [ ] Investigate an iOS home screen widget (WidgetKit) for incrementing/decrementing a counter without opening the app
-
-**Distribution**
-- [ ] Enroll in the Apple Developer Program ($99/yr) when ready to share beyond your own device
-- [ ] Set up App Store Connect record and app icon
-- [ ] Run a TestFlight beta with a few real users (friends/family group is a natural first test)
-- [ ] Write a privacy policy (required even for simple apps, more so once accounts/backend exist)
-- [ ] Submit for App Store review
 
 **Monetization (later, once group features exist)**
 - [ ] Decide free-tier limits (e.g. capped number of personal counters)
