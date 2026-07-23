@@ -419,13 +419,6 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                           ),
                         ),
                       ),
-                    const SizedBox(height: 24),
-                    Text('Admin', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    Text(
-                      adminName,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
                     if (target != null) ...[
                       const SizedBox(height: 24),
                       Text(
@@ -460,6 +453,16 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                           ),
                         ),
                     ],
+                    const SizedBox(height: 24),
+                    Text(
+                      'Group admin',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      adminName,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                   ],
                 );
               },
