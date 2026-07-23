@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'app_dialog.dart';
 
 /// Compact +/- control for adjusting a tally by a configurable step. Tonal
 /// icon buttons (matching the app's filled, rounded language) bracket a
@@ -34,6 +37,12 @@ class TallyStepper extends StatelessWidget {
             controller: stepController,
             textAlign: TextAlign.center,
             keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(
+                maxCounterInput.toString().length,
+              ),
+            ],
             decoration: InputDecoration(
               isDense: true,
               filled: true,

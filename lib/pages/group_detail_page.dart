@@ -151,7 +151,11 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
           builder: (context, setDialogState) {
             final target = int.tryParse(targetController.text);
             final isTargetValid =
-                !hasTarget || (target != null && target > currentTotal);
+                !hasTarget ||
+                (target != null &&
+                    target > currentTotal &&
+                    target <= maxCounterInput);
+            final isNameValid = nameController.text.trim().isNotEmpty;
 
             Future<void> submit() async {
               if (isSubmitting) return;
@@ -180,6 +184,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                     controller: nameController,
                     decoration: const InputDecoration(labelText: 'Name'),
                     autofocus: true,
+                    onChanged: (_) => setDialogState(() {}),
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
@@ -196,9 +201,16 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                       decoration: InputDecoration(
                         labelText: 'Target count',
                         hintText: 'e.g. ${nextTenAbove(currentTotal)}',
-                        helperText: 'Must be higher than $currentTotal',
+                        helperText:
+                            'Must be between ${currentTotal + 1} and $maxCounterInput',
                       ),
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(
+                          maxCounterInput.toString().length,
+                        ),
+                      ],
                       onChanged: (_) => setDialogState(() {}),
                     ),
                   const SizedBox(height: 16),
@@ -218,7 +230,9 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                     secondaryLabel: 'Cancel',
                     onSecondary: () => Navigator.of(context).pop(),
                     primaryLabel: 'Save',
-                    onPrimary: (isTargetValid && !isSubmitting) ? submit : null,
+                    onPrimary: (isTargetValid && isNameValid && !isSubmitting)
+                        ? submit
+                        : null,
                   ),
                 ],
               ),

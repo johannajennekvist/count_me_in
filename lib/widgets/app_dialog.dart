@@ -98,3 +98,8 @@ class AppDialogActions extends StatelessWidget {
 /// The smallest multiple of ten strictly greater than [count]. Used as a
 /// suggested-goal hint wherever a target must exceed a current count/total.
 int nextTenAbove(int count) => (count ~/ 10 + 1) * 10;
+
+/// Upper bound for any user-entered count-like number (goal target, tally
+/// step). Keeps values sane and matches the 6-digit width of the largest
+/// non-abbreviated badge count before [formatCompactCount] switches to "M".
+const maxCounterInput = 999999;

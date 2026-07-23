@@ -3,7 +3,7 @@
 **Personal goals (polish current MVP)**
 - [x] Fix keyboard not dismissing when tapping outside the step field
 - [x] Fix delete confirmation dialog text overflow
-- [ ] Handle edge cases (empty title, zero/negative targets, very large counts)
+- [x] Handle edge cases (empty title, zero/negative targets, very large counts)
 
 **Backend & auth**
 - [x] Pick a backend — Firebase
@@ -20,7 +20,7 @@
 - [x] Wire up realtime updates so group totals update live across members
 - [x] Let the group creator edit name/goal, including converting to/from having a goal
 - [x] Let the group creator remove a member, with a confirm popup (Firestore rules enforce creator-only, not just the UI)
-- [ ] Move member removal into the "Edit group" menu instead of a remove icon sitting on every member row — cleaner member list, removal action grouped with the other admin-only actions
+- [x] Move member removal into the "Edit group" menu instead of a remove icon sitting on every member row — cleaner member list, removal action grouped with the other admin-only actions
 - [x] Add copy-to-clipboard on the invite code popup, with visual feedback that it was copied
 - [x] Add a "Share" button on the invite code popup using the native share sheet (`share_plus`), sharing the code as plain text
 - [ ] Upgrade invite sharing to a tappable deep link that opens the app straight to "join this group" (skips manually typing the code). Needs Universal Links (iOS) / App Links (Android): a domain to host `apple-app-site-association` / `assetlinks.json` over HTTPS, Associated Domains + intent filter config in the native projects, and an `app_links`-based listener in Flutter to catch the incoming URL and route to the join flow. Bigger lift than the plain-text share — worth doing once there's real distribution (ties into the Distribution section below)

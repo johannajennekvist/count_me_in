@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/group.dart';
 import '../models/group_member.dart';
@@ -31,7 +32,11 @@ class _GroupsListPageState extends State<GroupsListPage> {
           builder: (context, setDialogState) {
             final target = int.tryParse(targetController.text);
             final isTargetValid =
-                !hasTarget || (target != null && target > currentTotal);
+                !hasTarget ||
+                (target != null &&
+                    target > currentTotal &&
+                    target <= maxCounterInput);
+            final isNameValid = nameController.text.trim().isNotEmpty;
 
             return AppDialog(
               child: Column(
@@ -44,6 +49,7 @@ class _GroupsListPageState extends State<GroupsListPage> {
                     controller: nameController,
                     decoration: const InputDecoration(labelText: 'Name'),
                     autofocus: true,
+                    onChanged: (_) => setDialogState(() {}),
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
@@ -60,9 +66,16 @@ class _GroupsListPageState extends State<GroupsListPage> {
                       decoration: InputDecoration(
                         labelText: 'Target count',
                         hintText: 'e.g. ${nextTenAbove(currentTotal)}',
-                        helperText: 'Must be higher than $currentTotal',
+                        helperText:
+                            'Must be between ${currentTotal + 1} and $maxCounterInput',
                       ),
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(
+                          maxCounterInput.toString().length,
+                        ),
+                      ],
                       onChanged: (_) => setDialogState(() {}),
                     ),
                   const SizedBox(height: 24),
@@ -70,7 +83,7 @@ class _GroupsListPageState extends State<GroupsListPage> {
                     secondaryLabel: 'Cancel',
                     onSecondary: () => Navigator.of(context).pop(),
                     primaryLabel: 'Create',
-                    onPrimary: isTargetValid
+                    onPrimary: (isTargetValid && isNameValid)
                         ? () {
                             final name = nameController.text.trim();
                             if (name.isEmpty) return;

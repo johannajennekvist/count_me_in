@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/counter.dart';
 import 'app_dialog.dart';
@@ -23,7 +24,11 @@ Future<void> showCounterFormDialog(
         builder: (context, setDialogState) {
           final target = int.tryParse(targetController.text);
           final isTargetValid =
-              !hasTarget || (target != null && target > currentCount);
+              !hasTarget ||
+              (target != null &&
+                  target > currentCount &&
+                  target <= maxCounterInput);
+          final isNameValid = titleController.text.trim().isNotEmpty;
 
           return AppDialog(
             child: Column(
@@ -36,6 +41,7 @@ Future<void> showCounterFormDialog(
                   controller: titleController,
                   decoration: const InputDecoration(labelText: 'Name'),
                   autofocus: true,
+                  onChanged: (_) => setDialogState(() {}),
                 ),
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
@@ -52,9 +58,16 @@ Future<void> showCounterFormDialog(
                     decoration: InputDecoration(
                       labelText: 'Target count',
                       hintText: 'e.g. ${nextTenAbove(currentCount)}',
-                      helperText: 'Must be higher than $currentCount',
+                      helperText:
+                          'Must be between ${currentCount + 1} and $maxCounterInput',
                     ),
                     keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(
+                        maxCounterInput.toString().length,
+                      ),
+                    ],
                     onChanged: (_) => setDialogState(() {}),
                   ),
                 const SizedBox(height: 24),
@@ -62,7 +75,7 @@ Future<void> showCounterFormDialog(
                   secondaryLabel: 'Cancel',
                   onSecondary: () => Navigator.of(context).pop(),
                   primaryLabel: isEditing ? 'Save' : 'Add',
-                  onPrimary: isTargetValid
+                  onPrimary: (isTargetValid && isNameValid)
                       ? () {
                           final title = titleController.text.trim();
                           if (title.isEmpty) return;
