@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../models/group.dart';
+import '../models/group_member.dart';
 import '../services/group_service.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/error_dialog.dart';
@@ -235,8 +236,21 @@ class _GroupsListPageState extends State<GroupsListPage> {
               return Card(
                 child: ListTile(
                   title: Text(group.name),
-                  subtitle: Text(
-                    group.target != null ? 'Goal: ${group.target}' : 'No goal',
+                  subtitle: StreamBuilder<List<GroupMember>>(
+                    stream: _groupService.streamMembers(group.id),
+                    builder: (context, snapshot) {
+                      final members = snapshot.data ?? const <GroupMember>[];
+                      final total = members.fold<int>(
+                        0,
+                        (sum, member) => sum + member.tally,
+                      );
+                      final target = group.target;
+                      return Text(
+                        target != null
+                            ? 'Group progress: $total/$target'
+                            : 'Group counter: $total',
+                      );
+                    },
                   ),
                   trailing: Text(group.code),
                   onTap: () {
