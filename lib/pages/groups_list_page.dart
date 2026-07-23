@@ -1,8 +1,10 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../models/group.dart';
 import '../services/group_service.dart';
 import '../widgets/app_dialog.dart';
+import '../widgets/error_dialog.dart';
 import 'group_detail_page.dart';
 
 class GroupsListPage extends StatefulWidget {
@@ -67,15 +69,12 @@ class _GroupsListPageState extends State<GroupsListPage> {
                     onSecondary: () => Navigator.of(context).pop(),
                     primaryLabel: 'Create',
                     onPrimary: isTargetValid
-                        ? () async {
+                        ? () {
                             final name = nameController.text.trim();
                             if (name.isEmpty) return;
 
-                            await _groupService.createGroup(
-                              name: name,
-                              target: hasTarget ? target : null,
-                            );
-                            if (context.mounted) Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                            _createGroup(name, hasTarget ? target : null);
                           }
                         : null,
                   ),
@@ -88,60 +87,92 @@ class _GroupsListPageState extends State<GroupsListPage> {
     );
   }
 
+  // Closes the dialog immediately (assuming success) rather than waiting on
+  // the network round-trip; shows an error popup on top of the groups list
+  // in the rare case it actually fails.
+  Future<void> _createGroup(String name, int? target) async {
+    try {
+      await _groupService.createGroup(name: name, target: target);
+    } on FirebaseException catch (e) {
+      if (!mounted) return;
+      showErrorDialog(
+        context,
+        title: "Couldn't create group",
+        message: e.message ?? 'Something went wrong. Please try again.',
+      );
+    } catch (_) {
+      if (!mounted) return;
+      showErrorDialog(
+        context,
+        title: "Couldn't create group",
+        message: 'Something went wrong. Please try again.',
+      );
+    }
+  }
+
   Future<void> _showJoinGroupDialog() async {
     final codeController = TextEditingController();
-    String? errorMessage;
 
     await showDialog<void>(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AppDialog(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AppDialogTitle('Join a group'),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: codeController,
-                    decoration: const InputDecoration(labelText: 'Code'),
-                    textCapitalization: TextCapitalization.characters,
-                    autofocus: true,
-                  ),
-                  if (errorMessage != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      errorMessage!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  AppDialogActions(
-                    secondaryLabel: 'Cancel',
-                    onSecondary: () => Navigator.of(context).pop(),
-                    primaryLabel: 'Join',
-                    onPrimary: () async {
-                      final code = codeController.text.trim();
-                      if (code.isEmpty) return;
-                      try {
-                        await _groupService.joinGroupByCode(code);
-                        if (context.mounted) Navigator.of(context).pop();
-                      } on StateError catch (e) {
-                        setDialogState(() => errorMessage = e.message);
-                      }
-                    },
-                  ),
-                ],
+        return AppDialog(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const AppDialogTitle('Join a group'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: codeController,
+                decoration: const InputDecoration(labelText: 'Code'),
+                textCapitalization: TextCapitalization.characters,
+                autofocus: true,
               ),
-            );
-          },
+              const SizedBox(height: 24),
+              AppDialogActions(
+                secondaryLabel: 'Cancel',
+                onSecondary: () => Navigator.of(context).pop(),
+                primaryLabel: 'Join',
+                onPrimary: () {
+                  final code = codeController.text.trim();
+                  if (code.isEmpty) return;
+
+                  Navigator.of(context).pop();
+                  _joinGroup(code);
+                },
+              ),
+            ],
+          ),
         );
       },
     );
+  }
+
+  // Same optimistic-close approach as create: pop immediately, only surface
+  // an error popup if joining actually failed (bad code, network, etc.).
+  // Dismissing the error popup reopens the join dialog so the user can
+  // immediately retry (e.g. fix a typo'd code) without going back through
+  // the FAB menu.
+  Future<void> _joinGroup(String code) async {
+    try {
+      await _groupService.joinGroupByCode(code);
+    } on StateError catch (e) {
+      await _showJoinErrorThenRetry(e.message);
+    } on FirebaseException catch (e) {
+      await _showJoinErrorThenRetry(
+        e.message ?? 'Something went wrong. Please try again.',
+      );
+    } catch (_) {
+      await _showJoinErrorThenRetry('Something went wrong. Please try again.');
+    }
+  }
+
+  Future<void> _showJoinErrorThenRetry(String message) async {
+    if (!mounted) return;
+    await showErrorDialog(context, title: "Couldn't join group", message: message);
+    if (!mounted) return;
+    _showJoinGroupDialog();
   }
 
   Future<void> _showAddOptions() async {

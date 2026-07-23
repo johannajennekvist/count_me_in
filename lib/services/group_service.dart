@@ -84,18 +84,18 @@ class GroupService {
       createdAt: now,
       memberIds: [_uid],
     );
-    await docRef.set(group.toFirestore());
-    await docRef
-        .collection('members')
-        .doc(_uid)
-        .set(
-          GroupMember(
-            uid: _uid,
-            displayName: _displayName,
-            tally: 0,
-            joinedAt: now,
-          ).toFirestore(),
-        );
+    final batch = _firestore.batch();
+    batch.set(docRef, group.toFirestore());
+    batch.set(
+      docRef.collection('members').doc(_uid),
+      GroupMember(
+        uid: _uid,
+        displayName: _displayName,
+        tally: 0,
+        joinedAt: now,
+      ).toFirestore(),
+    );
+    await batch.commit();
     return group;
   }
 
@@ -110,20 +110,20 @@ class GroupService {
     final doc = query.docs.first;
     final group = Group.fromFirestore(doc.id, doc.data());
     if (!group.memberIds.contains(_uid)) {
-      await doc.reference.update({
+      final batch = _firestore.batch();
+      batch.update(doc.reference, {
         'memberIds': FieldValue.arrayUnion([_uid]),
       });
-      await doc.reference
-          .collection('members')
-          .doc(_uid)
-          .set(
-            GroupMember(
-              uid: _uid,
-              displayName: _displayName,
-              tally: 0,
-              joinedAt: DateTime.now(),
-            ).toFirestore(),
-          );
+      batch.set(
+        doc.reference.collection('members').doc(_uid),
+        GroupMember(
+          uid: _uid,
+          displayName: _displayName,
+          tally: 0,
+          joinedAt: DateTime.now(),
+        ).toFirestore(),
+      );
+      await batch.commit();
     }
     return group;
   }
