@@ -10,6 +10,7 @@ import '../widgets/app_dialog.dart';
 import '../widgets/badge_icon.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../widgets/goal_reached_dialog.dart';
+import '../widgets/tally_stepper.dart';
 
 class GroupDetailPage extends StatefulWidget {
   final Group group;
@@ -454,32 +455,11 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.remove_circle_outline,
-                                      ),
-                                      onPressed: () => _groupService
+                                    TallyStepper(
+                                      stepController: _stepController,
+                                      onDecrement: () => _groupService
                                           .decrementMyTally(group.id, _step),
-                                    ),
-                                    SizedBox(
-                                      width: 44,
-                                      child: TextField(
-                                        controller: _stepController,
-                                        textAlign: TextAlign.center,
-                                        keyboardType: TextInputType.number,
-                                        decoration: const InputDecoration(
-                                          isDense: true,
-                                          contentPadding: EdgeInsets.symmetric(
-                                            vertical: 8,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.add_circle_outline,
-                                      ),
-                                      onPressed: () => _groupService
+                                      onIncrement: () => _groupService
                                           .incrementMyTally(group.id, _step),
                                     ),
                                   ],

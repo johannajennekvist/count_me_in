@@ -8,6 +8,7 @@ import '../widgets/badge_icon.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../widgets/counter_form_dialog.dart';
 import '../widgets/goal_reached_dialog.dart';
+import '../widgets/tally_stepper.dart';
 import 'counter_notes_page.dart';
 
 class CounterDetailPage extends StatefulWidget {
@@ -227,24 +228,11 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
                       icon: const Icon(Icons.restart_alt),
                       onPressed: _confirmReset,
                     ),
-                    IconButton(
+                    TallyStepper(
+                      stepController: _stepController,
+                      onDecrement: _decrement,
+                      onIncrement: _increment,
                       iconSize: 36,
-                      icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: _decrement,
-                    ),
-                    SizedBox(
-                      width: 64,
-                      child: TextField(
-                        controller: _stepController,
-                        textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(isDense: true),
-                      ),
-                    ),
-                    IconButton(
-                      iconSize: 36,
-                      icon: const Icon(Icons.add_circle_outline),
-                      onPressed: _increment,
                     ),
                   ],
                 ),

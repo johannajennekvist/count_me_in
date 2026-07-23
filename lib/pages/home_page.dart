@@ -6,6 +6,7 @@ import '../models/counter.dart';
 import '../services/counter_storage.dart';
 import '../widgets/counter_form_dialog.dart';
 import '../widgets/goal_reached_dialog.dart';
+import '../widgets/tally_stepper.dart';
 import 'counter_detail_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -241,28 +242,11 @@ class _HomePageState extends State<HomePage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.remove_circle_outline),
-                                  onPressed: () =>
+                                TallyStepper(
+                                  stepController: _stepControllerFor(counter),
+                                  onDecrement: () =>
                                       _decrement(counter, _stepFor(counter)),
-                                ),
-                                SizedBox(
-                                  width: 44,
-                                  child: TextField(
-                                    controller: _stepControllerFor(counter),
-                                    textAlign: TextAlign.center,
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 8,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.add_circle_outline),
-                                  onPressed: () =>
+                                  onIncrement: () =>
                                       _increment(counter, _stepFor(counter)),
                                 ),
                               ],

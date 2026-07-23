@@ -1,0 +1,59 @@
+import 'package:flutter/material.dart';
+
+/// Compact +/- control for adjusting a tally by a configurable step. Tonal
+/// icon buttons (matching the app's filled, rounded language) bracket a
+/// step-size field with a subtle fill so it still reads as editable, all
+/// together reading as one control instead of three loose widgets.
+class TallyStepper extends StatelessWidget {
+  final TextEditingController stepController;
+  final VoidCallback onDecrement;
+  final VoidCallback onIncrement;
+  final double iconSize;
+
+  const TallyStepper({
+    super.key,
+    required this.stepController,
+    required this.onDecrement,
+    required this.onIncrement,
+    this.iconSize = 24,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton.filledTonal(
+          iconSize: iconSize,
+          icon: const Icon(Icons.remove),
+          onPressed: onDecrement,
+        ),
+        SizedBox(
+          width: iconSize + 20,
+          child: TextField(
+            controller: stepController,
+            textAlign: TextAlign.center,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              isDense: true,
+              filled: true,
+              fillColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ),
+        IconButton.filledTonal(
+          iconSize: iconSize,
+          icon: const Icon(Icons.add),
+          onPressed: onIncrement,
+        ),
+      ],
+    );
+  }
+}
