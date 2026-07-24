@@ -35,20 +35,21 @@ class SettingsPage extends StatelessWidget {
             valueListenable: themeController,
             builder: (context, mode, _) {
               return SegmentedButton<ThemeMode>(
+                showSelectedIcon: false,
                 segments: const [
                   ButtonSegment(
                     value: ThemeMode.system,
-                    label: Text('System'),
+                    label: Text('System', maxLines: 1, overflow: TextOverflow.ellipsis),
                     icon: Icon(Icons.brightness_auto_outlined),
                   ),
                   ButtonSegment(
                     value: ThemeMode.light,
-                    label: Text('Light'),
+                    label: Text('Light', maxLines: 1, overflow: TextOverflow.ellipsis),
                     icon: Icon(Icons.light_mode_outlined),
                   ),
                   ButtonSegment(
                     value: ThemeMode.dark,
-                    label: Text('Dark'),
+                    label: Text('Dark', maxLines: 1, overflow: TextOverflow.ellipsis),
                     icon: Icon(Icons.dark_mode_outlined),
                   ),
                 ],
