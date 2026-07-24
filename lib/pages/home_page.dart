@@ -1,5 +1,4 @@
-import 'dart:math';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../models/counter.dart';
@@ -52,18 +51,33 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadCounters() async {
     final counters = await _storage.loadCounters();
+    final now = DateTime.now();
+    final refreshed = [for (final c in counters) c.refreshedForNow(now)];
     setState(() {
-      _counters = counters;
+      _counters = refreshed;
       _loading = false;
     });
+    if (!listEquals(counters, refreshed)) {
+      await _storage.saveCounters(refreshed);
+    }
   }
 
-  Future<void> _addCounter(String title, int? target) async {
+  Future<void> _addCounter(
+    String title,
+    int? target,
+    TimeTargetPeriod period,
+    int? periodTarget,
+    DateTime? anchorDate,
+  ) async {
     final counter = Counter(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       title: title,
       target: target,
       createdAt: DateTime.now(),
+    ).withTimeTarget(
+      period: period,
+      periodTarget: periodTarget,
+      anchorDate: anchorDate,
     );
     setState(() => _counters = [..._counters, counter]);
     await _storage.saveCounters(_counters);
@@ -101,7 +115,14 @@ class _HomePageState extends State<HomePage> {
         badgeColorIndex: updated.badges.length - 1,
         currentCount: updated.count,
         onSetNewGoal: (newTarget) {
-          _updateCounter(updated, updated.title, newTarget);
+          _updateCounter(
+            updated,
+            updated.title,
+            newTarget,
+            updated.period,
+            updated.periodTarget,
+            updated.anchorDate,
+          );
         },
       );
     }
@@ -111,10 +132,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _counters = [
         for (final c in _counters)
-          if (c.id == counter.id)
-            c.copyWith(count: max(c.count - amount, 0))
-          else
-            c,
+          if (c.id == counter.id) c.decremented(amount) else c,
       ];
     });
     await _storage.saveCounters(_counters);
@@ -135,12 +153,21 @@ class _HomePageState extends State<HomePage> {
     Counter counter,
     String title,
     int? target,
+    TimeTargetPeriod period,
+    int? periodTarget,
+    DateTime? anchorDate,
   ) async {
     setState(() {
       _counters = [
         for (final c in _counters)
           if (c.id == counter.id)
-            c.withDetails(title: title, target: target)
+            c
+                .withDetails(title: title, target: target)
+                .withTimeTarget(
+                  period: period,
+                  periodTarget: periodTarget,
+                  anchorDate: anchorDate,
+                )
           else
             c,
       ];
@@ -202,8 +229,21 @@ class _HomePageState extends State<HomePage> {
                               ),
                               onDecrement: (amount) =>
                                   _decrement(counter, amount),
-                              onEdit: (title, target) =>
-                                  _updateCounter(counter, title, target),
+                              onEdit:
+                                  (
+                                    title,
+                                    target,
+                                    period,
+                                    periodTarget,
+                                    anchorDate,
+                                  ) => _updateCounter(
+                                    counter,
+                                    title,
+                                    target,
+                                    period,
+                                    periodTarget,
+                                    anchorDate,
+                                  ),
                               onNotesChanged: (notes) =>
                                   _updateNotes(counter, notes),
                               onReset: (clearBadges) =>
@@ -229,6 +269,10 @@ class _HomePageState extends State<HomePage> {
                                     ).textTheme.titleMedium,
                                   ),
                                 ),
+                                if (counter.period != TimeTargetPeriod.none) ...[
+                                  Text('🔥 ${counter.streak}'),
+                                  const SizedBox(width: 8),
+                                ],
                                 Text(
                                   progress == null
                                       ? '${counter.count}'
@@ -263,7 +307,8 @@ class _HomePageState extends State<HomePage> {
         heroTag: 'home_page_fab',
         onPressed: () => showCounterFormDialog(
           context,
-          onSubmit: (title, target) => _addCounter(title, target),
+          onSubmit: (title, target, period, periodTarget, anchorDate) =>
+              _addCounter(title, target, period, periodTarget, anchorDate),
         ),
         tooltip: 'Add counter',
         child: const Icon(Icons.add),

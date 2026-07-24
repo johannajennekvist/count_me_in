@@ -73,7 +73,7 @@
 - [x] Award a badge when a personal counter's goal is reached (target hit), shown as a horizontal scrollable viewer under Notes, capped at the latest 15
 - [x] Save the date a goal was reached
 - [x] Award badges for group goals too, shown under the members list, attributed to whichever member's increment crossed the goal (initials shown on the badge)
-- [ ] Look into time-targeted goals and streaks (e.g. daily/weekly goals, consecutive-day streak tracking)
+- [x] Look into time-targeted goals and streaks (e.g. daily/weekly goals, consecutive-day streak tracking) — personal counters only for now; None/Daily/Weekly/Monthly/Yearly cadence with a user-chosen anchor (day of week/month/month+day), period progress %, and streak tracking
 - [x] Show a celebratory popup when a goal is reached (personal counters and group goals)
 - [x] From that popup, offer an option to raise/update the goal right there instead of needing to go find the edit button
 - [x] Show a number on each badge icon for the value it was reached at, formatted compactly for large numbers (999 as-is, then 1k, 1.4k, 1M, etc.)

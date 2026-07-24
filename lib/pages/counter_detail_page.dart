@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../models/counter.dart';
@@ -15,7 +13,14 @@ class CounterDetailPage extends StatefulWidget {
   final Counter counter;
   final void Function(int amount) onIncrement;
   final void Function(int amount) onDecrement;
-  final void Function(String title, int? target) onEdit;
+  final void Function(
+    String title,
+    int? target,
+    TimeTargetPeriod period,
+    int? periodTarget,
+    DateTime? anchorDate,
+  )
+  onEdit;
   final void Function(String notes) onNotesChanged;
   final void Function(bool clearBadges) onReset;
   final VoidCallback onDelete;
@@ -68,7 +73,13 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
         badgeColorIndex: updated.badges.length - 1,
         currentCount: _counter.count,
         onSetNewGoal: (newTarget) {
-          widget.onEdit(_counter.title, newTarget);
+          widget.onEdit(
+            _counter.title,
+            newTarget,
+            _counter.period,
+            _counter.periodTarget,
+            _counter.anchorDate,
+          );
           setState(
             () => _counter = _counter.withDetails(
               title: _counter.title,
@@ -83,10 +94,7 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
   void _decrement() {
     final amount = _step;
     widget.onDecrement(amount);
-    setState(
-      () =>
-          _counter = _counter.copyWith(count: max(_counter.count - amount, 0)),
-    );
+    setState(() => _counter = _counter.decremented(amount));
   }
 
   Future<void> _confirmReset() async {
@@ -169,13 +177,16 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
             onPressed: () => showCounterFormDialog(
               context,
               existing: _counter,
-              onSubmit: (title, target) {
-                widget.onEdit(title, target);
+              onSubmit: (title, target, period, periodTarget, anchorDate) {
+                widget.onEdit(title, target, period, periodTarget, anchorDate);
                 setState(
-                  () => _counter = _counter.withDetails(
-                    title: title,
-                    target: target,
-                  ),
+                  () => _counter = _counter
+                      .withDetails(title: title, target: target)
+                      .withTimeTarget(
+                        period: period,
+                        periodTarget: periodTarget,
+                        anchorDate: anchorDate,
+                      ),
                 );
               },
             ),
@@ -237,6 +248,33 @@ class _CounterDetailPageState extends State<CounterDetailPage> {
                   ],
                 ),
               ),
+              if (_counter.period != TimeTargetPeriod.none) ...[
+                const SizedBox(height: 32),
+                Text(
+                  '${_counter.period.label} goal',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                if (_counter.periodProgress != null) ...[
+                  Text(
+                    '${_counter.periodCount} / ${_counter.periodTarget} '
+                    '${_counter.period.periodNoun} — '
+                    '${(_counter.periodProgress! * 100).round()}%',
+                  ),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(value: _counter.periodProgress),
+                  const SizedBox(height: 8),
+                ],
+                Row(
+                  children: [
+                    const Text('🔥', style: TextStyle(fontSize: 20)),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${_counter.streak}-${_counter.period.streakUnit} streak',
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 32),
               Text('Notes', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
