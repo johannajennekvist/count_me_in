@@ -142,13 +142,44 @@ class GroupService {
 
   /// Removes the current user from the group. Unlike [removeMember], any
   /// member can do this for themselves (enforced by Firestore security
-  /// rules), including the creator — the group and its other members are
-  /// left intact, just without an active admin.
+  /// rules). If the current user is the creator: ownership transfers to
+  /// the longest-standing remaining member, or the whole group is deleted
+  /// if no other members remain.
   Future<void> leaveGroup(String groupId) async {
     final groupRef = _groups.doc(groupId);
+    final groupSnapshot = await groupRef.get();
+    final groupData = groupSnapshot.data();
+    if (groupData == null) return;
+    final group = Group.fromFirestore(groupSnapshot.id, groupData);
+
+    if (group.createdBy != _uid) {
+      final batch = _firestore.batch();
+      batch.update(groupRef, {
+        'memberIds': FieldValue.arrayRemove([_uid]),
+      });
+      batch.delete(groupRef.collection('members').doc(_uid));
+      await batch.commit();
+      return;
+    }
+
+    if (group.memberIds.length <= 1) {
+      await deleteGroup(groupId);
+      return;
+    }
+
+    final membersSnapshot = await groupRef.collection('members').get();
+    final remainingMembers =
+        membersSnapshot.docs
+            .map((doc) => GroupMember.fromFirestore(doc.id, doc.data()))
+            .where((member) => member.uid != _uid)
+            .toList()
+          ..sort((a, b) => a.joinedAt.compareTo(b.joinedAt));
+    final newAdminUid = remainingMembers.first.uid;
+
     final batch = _firestore.batch();
     batch.update(groupRef, {
       'memberIds': FieldValue.arrayRemove([_uid]),
+      'createdBy': newAdminUid,
     });
     batch.delete(groupRef.collection('members').doc(_uid));
     await batch.commit();

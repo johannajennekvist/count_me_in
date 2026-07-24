@@ -228,6 +228,31 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
     );
   }
 
+  void _confirmLeaveGroup(Group group) {
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final isCreator = group.createdBy == myUid;
+    final isLastMember = group.memberIds.length <= 1;
+
+    final message = !isCreator
+        ? 'Are you sure you want to leave "${group.name}"?'
+        : isLastMember
+        ? 'You\'re the only member left. Leaving will permanently delete '
+              '"${group.name}" for everyone. This can\'t be undone.'
+        : 'You created this group. Leaving will hand off admin to another '
+              'member — the group and its members stay intact.';
+
+    showConfirmDeleteDialog(
+      context,
+      title: 'Leave group',
+      message: message,
+      confirmLabel: 'Leave',
+      onConfirm: () {
+        _groupService.leaveGroup(group.id);
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
   void _celebrateGoalReached(Group group, int target, int total) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -284,6 +309,11 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                 onPressed: () => _showInviteCode(group),
                 icon: const Icon(Icons.share),
                 tooltip: 'Invite code',
+              ),
+              IconButton(
+                onPressed: () => _confirmLeaveGroup(group),
+                icon: const Icon(Icons.logout),
+                tooltip: 'Leave group',
               ),
             ],
           ),

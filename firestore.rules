@@ -34,6 +34,17 @@ service cloud.firestore {
             && resource.data.memberIds.hasAll(request.resource.data.memberIds)
             && request.resource.data.memberIds.size() < resource.data.memberIds.size()
           )
+          // The creator leaving hands admin to one of the remaining
+          // members in the same update (memberIds shrinks by exactly the
+          // creator's own uid, and the new createdBy must be one of the
+          // members left in the group).
+          || (
+            request.auth.uid == resource.data.createdBy
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds', 'createdBy'])
+            && resource.data.memberIds.removeAll([request.auth.uid])
+              == request.resource.data.memberIds
+            && request.resource.data.createdBy in request.resource.data.memberIds
+          )
           || (
             request.auth.uid == resource.data.createdBy
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'target'])
