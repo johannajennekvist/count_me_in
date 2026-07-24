@@ -27,6 +27,8 @@
 - [x] Fix keyboard not dismissing when tapping outside the step field
 - [x] Fix delete confirmation dialog text overflow
 - [x] Handle edge cases (empty title, zero/negative targets, very large counts)
+- [ ] Be able to reorder groups and personal goals in the list
+- [ ] Be able to mark personal goals as completed
 
 **Backend & auth**
 - [x] Pick a backend — Firebase
@@ -47,7 +49,9 @@
 - [x] Add copy-to-clipboard on the invite code popup, with visual feedback that it was copied
 - [x] Add a "Share" button on the invite code popup using the native share sheet (`share_plus`), sharing the code as plain text
 - [ ] Upgrade invite sharing to a tappable deep link that opens the app straight to "join this group" (skips manually typing the code). Needs Universal Links (iOS) / App Links (Android): a domain to host `apple-app-site-association` / `assetlinks.json` over HTTPS, Associated Domains + intent filter config in the native projects, and an `app_links`-based listener in Flutter to catch the incoming URL and route to the join flow. Bigger lift than the plain-text share — worth doing once there's real distribution (ties into the Shippable checklist above)
-- [ ] Let a user leave a group counter themselves (regular members) or delete it (if they're the admin) — `GroupService.leaveGroup`/`deleteGroup` already exist (added for account deletion / the app bar delete icon) but there's no self-serve "leave" button in the UI for a non-admin member who just wants out
+- [x] Let a user leave a group counter themselves — any member can leave via an app bar icon; if the admin leaves, ownership transfers to the longest-standing remaining member, or the group is deleted if they were the only one left
+- [x] Let the group creator decide at creation time whether the group is fully admin-controlled (only the admin can increase members' tallies, members can't edit their own) or member-controlled (each member controls their own tally, current/default behavior)
+- [ ] Make group edits save optimistically with instant UI feedback, and show a popup/snackbar only on failure (instead of waiting on the write before reflecting the change)
 
 **Accounts & profile**
 - [x] Add a guest/offline mode — "Continue without an account" on the login page, personal counters stored on-device only (SharedPreferences), no cloud sync; Groups tab shows a sign-in prompt since group tasks are inherently multi-user
@@ -85,6 +89,7 @@
 - [ ] Look into localization (support languages beyond English)
 - [ ] Investigate an iOS home screen widget (WidgetKit) for incrementing/decrementing a counter without opening the app
 - [ ] Try moving the top-right AppBar action icons (share/delete/edit, etc.) down to the bottom of the screen to streamline navigation
+- [ ] Replace the row of separate AppBar action icons on inner pages with a single 3-line (overflow) menu button showing text-labeled dropdown options instead
 
 **Monetization (later, once group features exist)**
 - [ ] Decide free-tier limits (e.g. capped number of personal counters)

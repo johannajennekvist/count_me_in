@@ -400,7 +400,9 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                   ),
                                 ],
                               ),
-                              if (members[i].uid == myUid) ...[
+                              if (group.adminControlled
+                                  ? group.createdBy == myUid
+                                  : members[i].uid == myUid) ...[
                                 const SizedBox(height: 4),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
@@ -408,9 +410,17 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                     TallyStepper(
                                       stepController: _stepController,
                                       onDecrement: () => _groupService
-                                          .decrementMyTally(group.id, _step),
+                                          .decrementMemberTally(
+                                            group.id,
+                                            members[i].uid,
+                                            _step,
+                                          ),
                                       onIncrement: () => _groupService
-                                          .incrementMyTally(group.id, _step),
+                                          .incrementMemberTally(
+                                            group.id,
+                                            members[i].uid,
+                                            _step,
+                                          ),
                                     ),
                                   ],
                                 ),

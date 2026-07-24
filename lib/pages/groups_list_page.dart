@@ -29,9 +29,17 @@ class _GroupsListPageState extends State<GroupsListPage> {
   // Closes the dialog immediately (assuming success) rather than waiting on
   // the network round-trip; shows an error popup on top of the groups list
   // in the rare case it actually fails.
-  Future<void> _createGroup(String name, int? target) async {
+  Future<void> _createGroup(
+    String name,
+    int? target,
+    bool adminControlled,
+  ) async {
     try {
-      await _groupService.createGroup(name: name, target: target);
+      await _groupService.createGroup(
+        name: name,
+        target: target,
+        adminControlled: adminControlled,
+      );
     } on FirebaseException catch (e) {
       if (!mounted) return;
       showErrorDialog(
@@ -183,7 +191,7 @@ class _GroupsListPageState extends State<GroupsListPage> {
 }
 
 class _CreateGroupDialog extends StatefulWidget {
-  final void Function(String name, int? target) onCreate;
+  final void Function(String name, int? target, bool adminControlled) onCreate;
 
   const _CreateGroupDialog({required this.onCreate});
 
@@ -195,6 +203,7 @@ class _CreateGroupDialogState extends State<_CreateGroupDialog> {
   final _nameController = TextEditingController();
   final _targetController = TextEditingController();
   bool _hasTarget = false;
+  bool _adminControlled = false;
 
   @override
   void dispose() {
@@ -254,6 +263,36 @@ class _CreateGroupDialogState extends State<_CreateGroupDialog> {
               ],
               onChanged: (_) => setState(() {}),
             ),
+          const SizedBox(height: 16),
+          Text('Who controls tallies?', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          SegmentedButton<bool>(
+            showSelectedIcon: false,
+            segments: const [
+              ButtonSegment(
+                value: false,
+                label: Text('Members', maxLines: 1, overflow: TextOverflow.ellipsis),
+                icon: Icon(Icons.people_outline),
+              ),
+              ButtonSegment(
+                value: true,
+                label: Text('Admin', maxLines: 1, overflow: TextOverflow.ellipsis),
+                icon: Icon(Icons.shield_outlined),
+              ),
+            ],
+            selected: {_adminControlled},
+            onSelectionChanged: (selection) =>
+                setState(() => _adminControlled = selection.first),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _adminControlled
+                ? 'Only you will be able to update members\' tallies.'
+                : 'Each member can update their own tally.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 24),
           AppDialogActions(
             secondaryLabel: 'Cancel',
@@ -265,7 +304,7 @@ class _CreateGroupDialogState extends State<_CreateGroupDialog> {
                     if (name.isEmpty) return;
 
                     Navigator.of(context).pop();
-                    widget.onCreate(name, _hasTarget ? target : null);
+                    widget.onCreate(name, _hasTarget ? target : null, _adminControlled);
                   }
                 : null,
           ),

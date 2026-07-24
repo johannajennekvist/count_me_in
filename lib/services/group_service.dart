@@ -71,7 +71,11 @@ class GroupService {
     await _groups.doc(groupId).update({'name': name, 'target': target});
   }
 
-  Future<Group> createGroup({required String name, int? target}) async {
+  Future<Group> createGroup({
+    required String name,
+    int? target,
+    bool adminControlled = false,
+  }) async {
     final code = _generateCode();
     final now = DateTime.now();
     final docRef = _groups.doc();
@@ -83,6 +87,7 @@ class GroupService {
       createdBy: _uid,
       createdAt: now,
       memberIds: [_uid],
+      adminControlled: adminControlled,
     );
     final batch = _firestore.batch();
     batch.set(docRef, group.toFirestore());
@@ -196,9 +201,16 @@ class GroupService {
     await batch.commit();
   }
 
-  Future<void> incrementMyTally(String groupId, int amount) async {
+  /// Increments [uid]'s tally within the group. Firestore rules enforce who
+  /// is allowed to do this: the member themselves in a member-controlled
+  /// group, or the group's creator in an admin-controlled one.
+  Future<void> incrementMemberTally(
+    String groupId,
+    String uid,
+    int amount,
+  ) async {
     final groupRef = _groups.doc(groupId);
-    await groupRef.collection('members').doc(_uid).update({
+    await groupRef.collection('members').doc(uid).update({
       'tally': FieldValue.increment(amount),
     });
     await _maybeAwardGroupBadge(groupRef);
@@ -249,8 +261,14 @@ class GroupService {
     });
   }
 
-  Future<void> decrementMyTally(String groupId, int amount) async {
-    final ref = _groups.doc(groupId).collection('members').doc(_uid);
+  /// Decrements [uid]'s tally within the group, clamped at zero. Same
+  /// permission model as [incrementMemberTally].
+  Future<void> decrementMemberTally(
+    String groupId,
+    String uid,
+    int amount,
+  ) async {
+    final ref = _groups.doc(groupId).collection('members').doc(uid);
     await _firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(ref);
       final current = (snapshot.data()?['tally'] as int?) ?? 0;

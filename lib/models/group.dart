@@ -35,6 +35,7 @@ class Group {
   final DateTime createdAt;
   final List<String> memberIds;
   final List<GroupBadge> badges;
+  final bool adminControlled;
 
   const Group({
     required this.id,
@@ -45,6 +46,7 @@ class Group {
     required this.createdAt,
     required this.memberIds,
     this.badges = const [],
+    this.adminControlled = false,
   });
 
   factory Group.fromFirestore(String id, Map<String, dynamic> data) => Group(
@@ -60,6 +62,7 @@ class Group {
             ?.map((e) => GroupBadge.fromFirestore(e as Map<String, dynamic>))
             .toList() ??
         const [],
+    adminControlled: data['adminControlled'] as bool? ?? false,
   );
 
   Map<String, dynamic> toFirestore() => {
@@ -70,5 +73,6 @@ class Group {
     'createdAt': Timestamp.fromDate(createdAt),
     'memberIds': memberIds,
     'badges': badges.map((b) => b.toFirestore()).toList(),
+    'adminControlled': adminControlled,
   };
 }
