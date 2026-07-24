@@ -40,7 +40,6 @@ class SettingsPage extends StatelessWidget {
                   ButtonSegment(
                     value: ThemeMode.system,
                     label: Text('System', maxLines: 1, overflow: TextOverflow.ellipsis),
-                    icon: Icon(Icons.brightness_auto_outlined),
                   ),
                   ButtonSegment(
                     value: ThemeMode.light,
